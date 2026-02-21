@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Auth Demo</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: system-ui, sans-serif;
+      background: #f0f2f5;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+    }
+    .card {
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 2px 12px rgba(0,0,0,.1);
+      padding: 2rem;
+      width: 100%;
+      max-width: 360px;
+    }
+    h1 { font-size: 1.4rem; margin-bottom: 1.5rem; color: #111; }
+    .field { margin-bottom: 1rem; }
+    label { display: block; font-size: .85rem; color: #555; margin-bottom: .3rem; }
+    input[type=text], input[type=password] {
+      width: 100%;
+      padding: .55rem .75rem;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 1rem;
+    }
+    button {
+      width: 100%;
+      padding: .65rem;
+      border: none;
+      border-radius: 6px;
+      font-size: 1rem;
+      cursor: pointer;
+      margin-top: .5rem;
+    }
+    #loginBtn  { background: #0066cc; color: #fff; }
+    #logoutBtn { background: #cc2200; color: #fff; }
+    button:hover { opacity: .9; }
+    #error { color: #cc2200; font-size: .85rem; margin-top: .5rem; }
+    #dashboard { display: none; }
+    #loginForm  { display: block; }
+    .welcome { font-size: 1rem; color: #333; margin-bottom: 1.2rem; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <!-- Login form -->
+    <div id="loginForm">
+      <h1>Sign in</h1>
+      <div class="field">
+        <label for="username">Username</label>
+        <input type="text" id="username" placeholder="admin" autocomplete="username" />
+      </div>
+      <div class="field">
+        <label for="password">Password</label>
+        <input type="password" id="password" placeholder="password" autocomplete="current-password" />
+      </div>
+      <button id="loginBtn">Sign in</button>
+      <p id="error"></p>
+    </div>
+
+    <!-- Dashboard shown after login -->
+    <div id="dashboard">
+      <h1>Dashboard</h1>
+      <p class="welcome" id="welcomeMsg"></p>
+      <button id="logoutBtn">Log out</button>
+    </div>
+  </div>
+
+  <script src="auth.js"></script>
+</body>
+</html>
