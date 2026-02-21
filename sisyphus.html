@@ -1,0 +1,923 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sisyphus</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body { overflow:hidden; background:#000; font-family:'Georgia',serif; }
+canvas { display:block; }
+
+#dialog-overlay {
+    display:none;
+    position:fixed;
+    top:0; left:0; width:100%; height:100%;
+    z-index:10;
+    pointer-events:none;
+}
+#dialog-overlay.active { display:flex; justify-content:center; align-items:center; pointer-events:all; }
+
+#dialog-box {
+    background: rgba(0,0,0,0.85);
+    border: 2px solid rgba(255,255,255,0.3);
+    border-radius: 16px;
+    padding: 40px;
+    max-width: 550px;
+    width: 90%;
+    text-align: center;
+    animation: fadeInDialog 1s ease;
+}
+
+#voice-text {
+    color: #ddd;
+    font-size: 1.5rem;
+    font-style: italic;
+    margin-bottom: 25px;
+    text-shadow: 0 0 20px rgba(255,255,255,0.3);
+    line-height: 1.4;
+}
+
+#answer-input {
+    width: 100%;
+    padding: 14px 18px;
+    font-size: 1.1rem;
+    font-family: 'Georgia', serif;
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.3);
+    border-radius: 8px;
+    color: #fff;
+    outline: none;
+    margin-bottom: 15px;
+}
+#answer-input:focus { border-color: rgba(255,255,255,0.6); }
+#answer-input::placeholder { color: rgba(255,255,255,0.4); }
+
+#submit-btn {
+    padding: 12px 40px;
+    font-size: 1rem;
+    font-family: 'Georgia', serif;
+    background: rgba(255,255,255,0.15);
+    border: 1px solid rgba(255,255,255,0.3);
+    border-radius: 8px;
+    color: #fff;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+#submit-btn:hover { background: rgba(255,255,255,0.25); }
+
+#cycle-counter {
+    position: fixed;
+    top: 15px;
+    right: 20px;
+    color: rgba(255,255,255,0.5);
+    font-size: 0.9rem;
+    z-index: 5;
+}
+
+#mood-label {
+    position: fixed;
+    top: 15px;
+    left: 20px;
+    font-size: 0.9rem;
+    z-index: 5;
+    transition: color 1s;
+}
+
+@keyframes fadeInDialog {
+    from { opacity:0; transform: translateY(-30px); }
+    to   { opacity:1; transform: translateY(0); }
+}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div id="cycle-counter">Zyklus: 1</div>
+<div id="mood-label"></div>
+<div id="dialog-overlay">
+    <div id="dialog-box">
+        <div id="voice-text"></div>
+        <input id="answer-input" type="text" placeholder="Deine Antwort..." autocomplete="off">
+        <br>
+        <button id="submit-btn">Antworten</button>
+    </div>
+</div>
+
+<script>
+// ============================================================
+//  SISYPHUS — Ein interaktives Spiel
+// ============================================================
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+let W, H;
+
+function resize() {
+    W = canvas.width = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+}
+resize();
+window.addEventListener('resize', resize);
+
+// --- Game State ---
+let mood = 0.5;           // 0 = finsterste Dunkelheit, 1 = paradiesisch
+let targetMood = 0.5;
+let cycle = 1;
+let phase = 'pushing';    // pushing | summit | rolling_back | asking | waiting
+let sisX, sisY;           // Sisyphus position
+let boulderX, boulderY;
+let pushProgress = 0;     // 0..1 along the hill
+let rollbackProgress = 0;
+let summitTimer = 0;
+let waitTimer = 0;
+
+// Hill geometry
+function hillStartX() { return W * 0.12; }
+function hillStartY() { return H * 0.82; }
+function hillTopX()   { return W * 0.72; }
+function hillTopY()   { return H * 0.28; }
+
+function lerpHill(t) {
+    const sx = hillStartX(), sy = hillStartY();
+    const tx = hillTopX(), ty = hillTopY();
+    const x = sx + (tx - sx) * t;
+    const curve = t * t * 0.3;
+    const y = sy + (ty - sy) * t - curve * (sy - ty) * 0.15;
+    return { x, y };
+}
+
+// --- Environment elements ---
+let trees = [];
+let flowers = [];
+let birds = [];
+let clouds = [];
+let raindrops = [];
+let stars = [];
+let lightnings = [];
+
+function initEnvironment() {
+    trees = [];
+    for (let i = 0; i < 8; i++) {
+        trees.push({
+            x: Math.random() * W,
+            baseY: H * (0.7 + Math.random() * 0.15),
+            size: 30 + Math.random() * 50,
+            sway: Math.random() * Math.PI * 2
+        });
+    }
+    flowers = [];
+    for (let i = 0; i < 20; i++) {
+        flowers.push({
+            x: Math.random() * W,
+            y: H * (0.78 + Math.random() * 0.15),
+            size: 3 + Math.random() * 5,
+            color: Math.random() * 360,
+            phase: Math.random() * Math.PI * 2
+        });
+    }
+    birds = [];
+    for (let i = 0; i < 5; i++) {
+        birds.push({
+            x: Math.random() * W,
+            y: H * (0.1 + Math.random() * 0.25),
+            speed: 0.5 + Math.random() * 1.5,
+            wingPhase: Math.random() * Math.PI * 2,
+            size: 8 + Math.random() * 8
+        });
+    }
+    clouds = [];
+    for (let i = 0; i < 6; i++) {
+        clouds.push({
+            x: Math.random() * W * 1.5 - W * 0.25,
+            y: H * (0.05 + Math.random() * 0.2),
+            w: 100 + Math.random() * 200,
+            speed: 0.2 + Math.random() * 0.5
+        });
+    }
+    stars = [];
+    for (let i = 0; i < 80; i++) {
+        stars.push({
+            x: Math.random() * W,
+            y: Math.random() * H * 0.5,
+            size: 0.5 + Math.random() * 2,
+            twinkle: Math.random() * Math.PI * 2
+        });
+    }
+}
+initEnvironment();
+
+// --- Sentiment Analysis ---
+const positiveWords = [
+    'freude','freue','glück','glücklich','schön','wunderbar','liebe','lieben','lieb',
+    'hoffnung','hoffe','mut','mutig','stark','stärke','sonne','licht','lächeln','lächle',
+    'danke','dankbar','dankbarkeit','freund','freundschaft','sinn','sinnvoll',
+    'wachsen','wachse','leben','lebendig','weiter','weitermachen','ja','gut','prima',
+    'toll','super','herrlich','fantastisch','großartig','positiv','kraft','kräftig',
+    'frei','freiheit','frieden','friede','friedlich','freundlich','natur','herz',
+    'lieben','gern','gerne','genießen','genieße','genuss','zufrieden','zufriedenheit',
+    'aufgeben? nie','niemals aufgeben','trotzdem','dennoch','egal','schaffe','schaffen',
+    'versuche','versuch','optimistisch','optimismus','heiter','fröhlich','lustig',
+    'lachen','lache','tanzen','tanze','singen','singe','musik','melodie','harmonie',
+    'blume','blumen','vogel','vögel','regenbogen','paradies','himmel','engel',
+    'triumph','sieg','siegen','gewinnen','gewinn','belohnung','ernte','erblühen',
+    'haha','okay','akzeptiere','akzeptanz','annehmen','nehme an','absurd','camus',
+    'happy','love','hope','strong','beautiful','yes','good','great','amazing','free'
+];
+
+const negativeWords = [
+    'hass','hasse','wut','wütend','zorn','zornig','verflucht','fluch','fluche',
+    'scheisse','scheiße','mist','verdammt','verdammte','elend','elendig',
+    'sinnlos','sinnlosigkeit','hoffnungslos','hoffnungslosigkeit','dunkel','dunkelheit',
+    'tod','tot','sterben','sterbe','ende','aufgeben','gebe auf','resigniere','resignation',
+    'müde','erschöpft','erschöpfung','schwach','schwäche','leid','leiden','leide',
+    'qual','quälen','quäle','schmerz','schmerzen','trauer','traurig','traurigkeit',
+    'weinen','weine','einsam','einsamkeit','allein','verlassen','verloren','verzweiflung',
+    'verzweifelt','angst','ängstlich','furcht','fürchte','grauen','grauenhaft',
+    'hässlich','zerstören','zerstöre','zerstörung','vernichten','vernichte',
+    'nichts','nein','nie','niemals','warum','wozu','egal','zwecklos',
+    'langweilig','öde','trostlos','kalt','kälte','finster','finsternis',
+    'rache','räche','wertlos','nutzlos','dumm','idiot','narr','betrug',
+    'lüge','lügen','verrat','verraten','feind','feinde','krieg','kampf',
+    'hölle','teufel','dämon','fluch','strafe','bestrafung','gefängnis',
+    'kette','ketten','sklave','sklaverei','last','bürde','folter',
+    'hate','angry','death','pain','hopeless','dark','lost','never','no','damn','fuck'
+];
+
+function analyzeSentiment(text) {
+    const lower = text.toLowerCase().trim();
+    if (!lower) return 0;
+
+    let score = 0;
+    let matches = 0;
+
+    for (const w of positiveWords) {
+        if (lower.includes(w)) { score += 1; matches++; }
+    }
+    for (const w of negativeWords) {
+        if (lower.includes(w)) { score -= 1; matches++; }
+    }
+
+    // Exclamation marks amplify
+    const excl = (lower.match(/!/g) || []).length;
+    if (score > 0) score += excl * 0.3;
+    if (score < 0) score -= excl * 0.3;
+
+    // Question marks suggest doubt
+    const quest = (lower.match(/\?/g) || []).length;
+    score -= quest * 0.15;
+
+    // ALL CAPS = intensity
+    const capsRatio = (text.match(/[A-ZÄÖÜ]/g) || []).length / Math.max(text.length, 1);
+    if (capsRatio > 0.5 && text.length > 3) {
+        score *= 1.5;
+    }
+
+    // Normalize to -1..1
+    if (matches === 0) return 0;
+    return Math.max(-1, Math.min(1, score / Math.max(matches, 1)));
+}
+
+// --- Voice Questions ---
+const questions = [
+    "Was sagst du nun, Sisyphos?",
+    "Der Fels ist wieder unten.\nWas empfindest du?",
+    "Und wieder von vorn.\nWelche Worte hast du?",
+    "Der Gipfel war nah.\nWas denkst du jetzt?",
+    "Ewig dreht sich das Rad.\nWas spricht dein Herz?",
+    "Die Götter beobachten dich.\nWas entgegnest du ihnen?",
+    "Der Stein kennt deinen Namen.\nWas sagst du ihm?",
+    "Der Berg schweigt.\nBrichst du das Schweigen?",
+    "Ein neuer Aufstieg beginnt.\nMit welchem Gefühl?",
+    "Zwischen Gipfel und Tal —\nWer bist du, Sisyphos?"
+];
+
+function getQuestion() {
+    if (cycle <= 2) return questions[0];
+    return questions[Math.floor(Math.random() * questions.length)];
+}
+
+// --- Dialog ---
+const overlay = document.getElementById('dialog-overlay');
+const voiceText = document.getElementById('voice-text');
+const answerInput = document.getElementById('answer-input');
+const submitBtn = document.getElementById('submit-btn');
+const cycleLabel = document.getElementById('cycle-counter');
+const moodLabel = document.getElementById('mood-label');
+
+function showDialog() {
+    voiceText.textContent = getQuestion();
+    answerInput.value = '';
+    overlay.classList.add('active');
+    setTimeout(() => answerInput.focus(), 300);
+}
+
+function hideDialog() {
+    overlay.classList.remove('active');
+}
+
+function submitAnswer() {
+    const text = answerInput.value.trim();
+    if (!text) return;
+    const sentiment = analyzeSentiment(text);
+    // Adjust mood (gradual, with inertia)
+    targetMood = Math.max(0, Math.min(1, mood + sentiment * 0.15));
+    hideDialog();
+    phase = 'waiting';
+    waitTimer = 0;
+    cycle++;
+    cycleLabel.textContent = 'Zyklus: ' + cycle;
+}
+
+submitBtn.addEventListener('click', submitAnswer);
+answerInput.addEventListener('keydown', e => {
+    if (e.key === 'Enter') submitAnswer();
+});
+
+// --- Drawing functions ---
+function lerp(a, b, t) { return a + (b - a) * t; }
+function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
+
+function getSkyColors() {
+    // mood 0=dark stormy, 0.5=normal dusk, 1=bright paradise
+    const m = mood;
+    if (m < 0.2) {
+        return { top:'#05050a', mid:'#0f0c15', bot:'#1a1520' };
+    } else if (m < 0.4) {
+        return { top:'#0c0c1e', mid:'#1a1832', bot:'#2d2840' };
+    } else if (m < 0.6) {
+        return { top:'#1a1a3e', mid:'#3b2d5e', bot:'#5e4470' };
+    } else if (m < 0.8) {
+        return { top:'#224477', mid:'#5577aa', bot:'#88aacc' };
+    } else {
+        return { top:'#3388cc', mid:'#66bbee', bot:'#aaddff' };
+    }
+}
+
+function drawSky(time) {
+    const sc = getSkyColors();
+    const grad = ctx.createLinearGradient(0, 0, 0, H);
+    grad.addColorStop(0, sc.top);
+    grad.addColorStop(0.5, sc.mid);
+    grad.addColorStop(1, sc.bot);
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, W, H);
+
+    // Stars (visible when dark)
+    if (mood < 0.6) {
+        const starAlpha = (0.6 - mood) / 0.6;
+        for (const s of stars) {
+            const twinkle = 0.3 + 0.7 * Math.abs(Math.sin(time * 0.002 + s.twinkle));
+            ctx.beginPath();
+            ctx.arc(s.x, s.y, s.size * twinkle, 0, Math.PI * 2);
+            ctx.fillStyle = `rgba(255,255,240,${starAlpha * twinkle * 0.8})`;
+            ctx.fill();
+        }
+    }
+
+    // Sun or darkened disc
+    if (mood > 0.5) {
+        const sunAlpha = (mood - 0.5) * 2;
+        const sunY = H * 0.15 - (mood - 0.5) * H * 0.05;
+        const sunR = 35 + mood * 15;
+        const sunGrad = ctx.createRadialGradient(W * 0.8, sunY, 0, W * 0.8, sunY, sunR * 3);
+        sunGrad.addColorStop(0, `rgba(255,240,180,${sunAlpha})`);
+        sunGrad.addColorStop(0.3, `rgba(255,200,100,${sunAlpha * 0.5})`);
+        sunGrad.addColorStop(1, 'rgba(255,200,100,0)');
+        ctx.fillStyle = sunGrad;
+        ctx.fillRect(0, 0, W, H * 0.5);
+        ctx.beginPath();
+        ctx.arc(W * 0.8, sunY, sunR, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(255,240,200,${sunAlpha})`;
+        ctx.fill();
+    }
+}
+
+function drawClouds(time) {
+    for (const c of clouds) {
+        c.x += c.speed * (mood < 0.3 ? 2 : 1);
+        if (c.x > W + c.w) c.x = -c.w;
+
+        const darkness = 1 - mood;
+        const r = Math.floor(lerp(220, 40, darkness));
+        const g = Math.floor(lerp(220, 35, darkness));
+        const b = Math.floor(lerp(230, 50, darkness));
+        const a = lerp(0.3, 0.9, darkness);
+
+        ctx.fillStyle = `rgba(${r},${g},${b},${a})`;
+        ctx.beginPath();
+        ctx.ellipse(c.x, c.y, c.w * 0.5, 25 + darkness * 20, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.ellipse(c.x - c.w * 0.2, c.y - 10, c.w * 0.3, 20 + darkness * 15, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.ellipse(c.x + c.w * 0.2, c.y + 5, c.w * 0.35, 22 + darkness * 12, 0, 0, Math.PI * 2);
+        ctx.fill();
+    }
+}
+
+function drawRain(time) {
+    if (mood > 0.45) return;
+    const intensity = Math.floor((0.45 - mood) / 0.45 * 120);
+    while (raindrops.length < intensity) {
+        raindrops.push({ x: Math.random() * W, y: Math.random() * -H, speed: 4 + Math.random() * 8, len: 10 + Math.random() * 20 });
+    }
+    while (raindrops.length > intensity) raindrops.pop();
+
+    const alpha = (0.45 - mood) / 0.45;
+    ctx.strokeStyle = `rgba(180,200,230,${alpha * 0.6})`;
+    ctx.lineWidth = 1;
+    for (const r of raindrops) {
+        r.y += r.speed;
+        if (r.y > H) { r.y = -r.len; r.x = Math.random() * W; }
+        ctx.beginPath();
+        ctx.moveTo(r.x, r.y);
+        ctx.lineTo(r.x - 1, r.y + r.len);
+        ctx.stroke();
+    }
+}
+
+function drawLightning(time) {
+    if (mood > 0.2) return;
+    if (Math.random() < 0.003) {
+        lightnings.push({ x: Math.random() * W, time: time, duration: 150 });
+    }
+    for (let i = lightnings.length - 1; i >= 0; i--) {
+        const l = lightnings[i];
+        const elapsed = time - l.time;
+        if (elapsed > l.duration) { lightnings.splice(i, 1); continue; }
+        const alpha = 1 - elapsed / l.duration;
+        ctx.strokeStyle = `rgba(255,255,255,${alpha * 0.8})`;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        let lx = l.x, ly = 0;
+        ctx.moveTo(lx, ly);
+        for (let s = 0; s < 6; s++) {
+            lx += (Math.random() - 0.5) * 40;
+            ly += H * 0.12;
+            ctx.lineTo(lx, ly);
+        }
+        ctx.stroke();
+        // Flash
+        if (elapsed < 50) {
+            ctx.fillStyle = `rgba(255,255,255,${0.05 * alpha})`;
+            ctx.fillRect(0, 0, W, H);
+        }
+    }
+}
+
+function drawGround(time) {
+    const groundY = H * 0.78;
+    // Ground color: dark mud to lush green
+    const r = Math.floor(lerp(30, 60, mood));
+    const g = Math.floor(lerp(20, 130, mood));
+    const b = Math.floor(lerp(15, 40, mood));
+    const grad = ctx.createLinearGradient(0, groundY, 0, H);
+    grad.addColorStop(0, `rgb(${r},${g},${b})`);
+    grad.addColorStop(1, `rgb(${Math.floor(r*0.6)},${Math.floor(g*0.6)},${Math.floor(b*0.6)})`);
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, groundY, W, H - groundY);
+
+    // Grass blades (only if mood > 0.3)
+    if (mood > 0.3) {
+        const grassCount = Math.floor(mood * 80);
+        const grassGreen = Math.floor(lerp(80, 200, mood));
+        for (let i = 0; i < grassCount; i++) {
+            const gx = (i / grassCount) * W;
+            const gy = groundY + Math.random() * 5;
+            const gh = 5 + mood * 15;
+            const sway = Math.sin(time * 0.003 + i) * 3;
+            ctx.strokeStyle = `rgba(${30+Math.floor(Math.random()*20)},${grassGreen},30,0.6)`;
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(gx, gy);
+            ctx.quadraticCurveTo(gx + sway, gy - gh * 0.6, gx + sway * 1.5, gy - gh);
+            ctx.stroke();
+        }
+    }
+}
+
+function drawHill(time) {
+    const sx = hillStartX(), sy = hillStartY();
+    const tx = hillTopX(), ty = hillTopY();
+
+    // Hill body
+    ctx.beginPath();
+    ctx.moveTo(sx - 40, H);
+    ctx.lineTo(sx - 40, sy);
+
+    // Draw hill surface
+    for (let t = 0; t <= 1; t += 0.02) {
+        const p = lerpHill(t);
+        ctx.lineTo(p.x, p.y);
+    }
+
+    ctx.lineTo(tx + 60, ty + 20);
+    ctx.lineTo(tx + 100, H);
+    ctx.closePath();
+
+    const hillR = Math.floor(lerp(40, 90, mood));
+    const hillG = Math.floor(lerp(30, 110, mood));
+    const hillB = Math.floor(lerp(25, 60, mood));
+    const hGrad = ctx.createLinearGradient(0, ty, 0, sy);
+    hGrad.addColorStop(0, `rgb(${hillR+20},${hillG+20},${hillB+10})`);
+    hGrad.addColorStop(1, `rgb(${hillR},${hillG},${hillB})`);
+    ctx.fillStyle = hGrad;
+    ctx.fill();
+
+    // Rocky texture
+    ctx.strokeStyle = `rgba(0,0,0,${0.05 + (1-mood)*0.1})`;
+    ctx.lineWidth = 0.5;
+    for (let t = 0.05; t < 1; t += 0.08) {
+        const p = lerpHill(t);
+        ctx.beginPath();
+        ctx.moveTo(p.x - 10, p.y + 5);
+        ctx.lineTo(p.x + 10, p.y + 15);
+        ctx.stroke();
+    }
+}
+
+function drawTrees(time) {
+    for (const t of trees) {
+        const health = mood;
+        const trunkH = t.size * 1.2;
+        const tx = t.x;
+        const ty = t.baseY;
+        const sway = Math.sin(time * 0.002 + t.sway) * (2 + (1 - mood) * 5);
+
+        // Trunk
+        const trunkR = Math.floor(lerp(30, 80, health));
+        const trunkG = Math.floor(lerp(20, 50, health));
+        const trunkB = Math.floor(lerp(15, 30, health));
+        ctx.strokeStyle = `rgb(${trunkR},${trunkG},${trunkB})`;
+        ctx.lineWidth = 4 + health * 4;
+        ctx.beginPath();
+        ctx.moveTo(tx, ty);
+        ctx.quadraticCurveTo(tx + sway * 0.5, ty - trunkH * 0.5, tx + sway, ty - trunkH);
+        ctx.stroke();
+
+        // Crown
+        if (health > 0.15) {
+            const crownSize = t.size * (0.3 + health * 0.7);
+            const leafR = Math.floor(lerp(60, 30, health));
+            const leafG = Math.floor(lerp(40, 160, health));
+            const leafB = Math.floor(lerp(20, 40, health));
+            const leafA = 0.3 + health * 0.6;
+            ctx.fillStyle = `rgba(${leafR},${leafG},${leafB},${leafA})`;
+            ctx.beginPath();
+            ctx.arc(tx + sway, ty - trunkH, crownSize, 0, Math.PI * 2);
+            ctx.fill();
+            // Second layer
+            ctx.fillStyle = `rgba(${leafR+15},${leafG+20},${leafB+10},${leafA * 0.7})`;
+            ctx.beginPath();
+            ctx.arc(tx + sway - crownSize * 0.3, ty - trunkH - crownSize * 0.2, crownSize * 0.7, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        // Dead tree: bare branches when mood very low
+        if (health < 0.25) {
+            ctx.strokeStyle = `rgba(60,40,30,0.8)`;
+            ctx.lineWidth = 2;
+            for (let b = 0; b < 3; b++) {
+                const angle = -Math.PI / 2 + (b - 1) * 0.5;
+                const bLen = t.size * 0.5;
+                ctx.beginPath();
+                ctx.moveTo(tx + sway, ty - trunkH);
+                ctx.lineTo(tx + sway + Math.cos(angle) * bLen, ty - trunkH + Math.sin(angle) * bLen);
+                ctx.stroke();
+            }
+        }
+    }
+}
+
+function drawFlowers(time) {
+    if (mood < 0.2) return;
+    const bloomFactor = Math.max(0, (mood - 0.2) / 0.8);
+    for (const f of flowers) {
+        const s = f.size * bloomFactor;
+        if (s < 1) continue;
+        const pulse = 1 + 0.15 * Math.sin(time * 0.004 + f.phase);
+        const hue = f.color + mood * 60;
+
+        // Petals
+        ctx.fillStyle = `hsla(${hue}, ${50 + mood * 40}%, ${40 + mood * 30}%, ${bloomFactor})`;
+        for (let p = 0; p < 5; p++) {
+            const angle = (p / 5) * Math.PI * 2 + time * 0.001;
+            ctx.beginPath();
+            ctx.ellipse(
+                f.x + Math.cos(angle) * s * pulse,
+                f.y + Math.sin(angle) * s * pulse,
+                s * 0.6, s * 0.3,
+                angle, 0, Math.PI * 2
+            );
+            ctx.fill();
+        }
+        // Center
+        ctx.fillStyle = `rgba(255,220,50,${bloomFactor})`;
+        ctx.beginPath();
+        ctx.arc(f.x, f.y, s * 0.35, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Stem
+        ctx.strokeStyle = `rgba(40,${100 + Math.floor(mood * 80)},30,${bloomFactor * 0.7})`;
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(f.x, f.y + s * 0.3);
+        ctx.lineTo(f.x, f.y + s * 2);
+        ctx.stroke();
+    }
+}
+
+function drawBirds(time) {
+    const birdHealth = mood;
+    if (birdHealth < 0.15) return;
+    const alpha = (birdHealth - 0.15) / 0.85;
+
+    for (const b of birds) {
+        b.x += b.speed;
+        if (b.x > W + 50) b.x = -50;
+        const wingAngle = Math.sin(time * 0.008 + b.wingPhase) * 0.5;
+        const s = b.size * (0.5 + birdHealth * 0.5);
+        const birdY = b.y + Math.sin(time * 0.003 + b.wingPhase) * 10;
+
+        const birdR = Math.floor(lerp(60, 40, mood));
+        const birdG = Math.floor(lerp(50, 40, mood));
+        const birdB = Math.floor(lerp(60, 50, mood));
+
+        ctx.strokeStyle = `rgba(${birdR},${birdG},${birdB},${alpha})`;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(b.x - s, birdY + wingAngle * s);
+        ctx.quadraticCurveTo(b.x - s * 0.3, birdY - wingAngle * s * 0.5, b.x, birdY);
+        ctx.quadraticCurveTo(b.x + s * 0.3, birdY - wingAngle * s * 0.5, b.x + s, birdY + wingAngle * s);
+        ctx.stroke();
+    }
+}
+
+function drawSisyphus(time) {
+    const sx = sisX;
+    const sy = sisY;
+    const scale = 1;
+    const lean = phase === 'pushing' ? 0.3 : 0;
+
+    // Body color shifts with mood
+    const skinR = Math.floor(lerp(140, 200, mood));
+    const skinG = Math.floor(lerp(100, 160, mood));
+    const skinB = Math.floor(lerp(80, 130, mood));
+
+    ctx.save();
+    ctx.translate(sx, sy);
+
+    // Legs — walking animation
+    const walkCycle = time * 0.008;
+    const legSwing = phase === 'pushing' ? Math.sin(walkCycle) * 8 : 0;
+
+    ctx.strokeStyle = `rgb(${skinR-30},${skinG-30},${skinB-20})`;
+    ctx.lineWidth = 4;
+    // Left leg
+    ctx.beginPath();
+    ctx.moveTo(0, -5);
+    ctx.lineTo(-5 + legSwing, 25);
+    ctx.lineTo(-3 + legSwing, 35);
+    ctx.stroke();
+    // Right leg
+    ctx.beginPath();
+    ctx.moveTo(0, -5);
+    ctx.lineTo(5 - legSwing, 25);
+    ctx.lineTo(7 - legSwing, 35);
+    ctx.stroke();
+
+    // Body
+    ctx.strokeStyle = `rgb(${skinR},${skinG},${skinB})`;
+    ctx.lineWidth = 5;
+    ctx.beginPath();
+    ctx.moveTo(0, -5);
+    ctx.lineTo(lean * 20, -35);
+    ctx.stroke();
+
+    // Arms — pushing
+    ctx.lineWidth = 3;
+    if (phase === 'pushing') {
+        const armPush = Math.sin(walkCycle * 0.5) * 3;
+        ctx.beginPath();
+        ctx.moveTo(lean * 15, -28);
+        ctx.lineTo(lean * 35 + armPush, -25);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(lean * 15, -23);
+        ctx.lineTo(lean * 33 + armPush, -18);
+        ctx.stroke();
+    } else {
+        // Arms resting or by side
+        ctx.beginPath();
+        ctx.moveTo(lean * 15, -28);
+        ctx.lineTo(-8, -10);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(lean * 15, -25);
+        ctx.lineTo(8, -10);
+        ctx.stroke();
+    }
+
+    // Head
+    ctx.fillStyle = `rgb(${skinR},${skinG},${skinB})`;
+    ctx.beginPath();
+    ctx.arc(lean * 22, -42, 8, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Expression changes with mood
+    const headX = lean * 22;
+    const headY = -42;
+
+    // Eyes
+    ctx.fillStyle = '#222';
+    ctx.beginPath();
+    ctx.arc(headX - 3, headY - 1, 1.2, 0, Math.PI * 2);
+    ctx.arc(headX + 3, headY - 1, 1.2, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Mouth
+    ctx.strokeStyle = '#222';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    if (mood > 0.65) {
+        // Smile
+        ctx.arc(headX, headY + 3, 3, 0.1 * Math.PI, 0.9 * Math.PI);
+    } else if (mood < 0.35) {
+        // Frown
+        ctx.arc(headX, headY + 6, 3, 1.1 * Math.PI, 1.9 * Math.PI);
+    } else {
+        // Neutral
+        ctx.moveTo(headX - 2, headY + 3);
+        ctx.lineTo(headX + 2, headY + 3);
+    }
+    ctx.stroke();
+
+    // Sweat drops when mood is low
+    if (mood < 0.4) {
+        const sweatAlpha = (0.4 - mood) / 0.4;
+        ctx.fillStyle = `rgba(150,200,255,${sweatAlpha})`;
+        const sweatY = headY - 5 + (time % 1000) / 1000 * 15;
+        ctx.beginPath();
+        ctx.arc(headX + 10, sweatY, 2, 0, Math.PI * 2);
+        ctx.fill();
+    }
+
+    ctx.restore();
+}
+
+function drawBoulder(time) {
+    const bx = boulderX;
+    const by = boulderY;
+    const radius = 22;
+
+    // Boulder appearance changes with mood
+    const darkness = 1 - mood;
+    const r = Math.floor(lerp(160, 80, darkness));
+    const g = Math.floor(lerp(150, 60, darkness));
+    const b = Math.floor(lerp(140, 50, darkness));
+
+    // Rolling rotation
+    let rotation = 0;
+    if (phase === 'pushing') rotation = pushProgress * Math.PI * 6;
+    else if (phase === 'rolling_back') rotation = (1 - rollbackProgress) * Math.PI * 6;
+
+    ctx.save();
+    ctx.translate(bx, by - radius);
+    ctx.rotate(rotation);
+
+    // Boulder body
+    const bGrad = ctx.createRadialGradient(-5, -5, 2, 0, 0, radius);
+    bGrad.addColorStop(0, `rgb(${r+30},${g+30},${b+30})`);
+    bGrad.addColorStop(1, `rgb(${r-20},${g-20},${b-20})`);
+    ctx.fillStyle = bGrad;
+    ctx.beginPath();
+    ctx.arc(0, 0, radius, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Cracks
+    ctx.strokeStyle = `rgba(0,0,0,${0.2 + darkness * 0.3})`;
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(-8, -5); ctx.lineTo(3, -12); ctx.lineTo(10, -3);
+    ctx.moveTo(-5, 8); ctx.lineTo(2, 3); ctx.lineTo(12, 7);
+    ctx.stroke();
+
+    ctx.restore();
+
+    // Shadow under boulder
+    ctx.fillStyle = 'rgba(0,0,0,0.2)';
+    ctx.beginPath();
+    ctx.ellipse(bx, by + 3, radius * 0.8, 5, 0, 0, Math.PI * 2);
+    ctx.fill();
+}
+
+function updateMoodLabel() {
+    let text, color;
+    if (mood < 0.15)      { text = 'Tiefste Finsternis'; color = '#551111'; }
+    else if (mood < 0.3)  { text = 'Düster & Trostlos'; color = '#884433'; }
+    else if (mood < 0.45) { text = 'Bedrückt'; color = '#887755'; }
+    else if (mood < 0.55) { text = 'Neutral'; color = '#999988'; }
+    else if (mood < 0.7)  { text = 'Hoffnungsvoll'; color = '#88aa66'; }
+    else if (mood < 0.85) { text = 'Heiter & Hell'; color = '#66bb88'; }
+    else                  { text = 'Paradiesisch'; color = '#44ddaa'; }
+    moodLabel.textContent = text;
+    moodLabel.style.color = color;
+}
+
+// --- Main Loop ---
+let lastTime = 0;
+
+function update(time) {
+    const dt = time - lastTime;
+    lastTime = time;
+
+    // Smooth mood transition
+    mood = lerp(mood, targetMood, 0.01);
+
+    // Phase logic
+    if (phase === 'pushing') {
+        const speed = 0.0003 + mood * 0.0002;
+        pushProgress += speed * dt;
+        if (pushProgress >= 1) {
+            pushProgress = 1;
+            phase = 'summit';
+            summitTimer = 0;
+        }
+        const pos = lerpHill(pushProgress);
+        sisX = pos.x - 20;
+        sisY = pos.y;
+        boulderX = pos.x + 10;
+        boulderY = pos.y;
+    }
+    else if (phase === 'summit') {
+        summitTimer += dt;
+        if (summitTimer > 1500) {
+            phase = 'rolling_back';
+            rollbackProgress = 0;
+        }
+    }
+    else if (phase === 'rolling_back') {
+        rollbackProgress += 0.001 * dt;
+        if (rollbackProgress >= 1) {
+            rollbackProgress = 1;
+            phase = 'asking';
+            showDialog();
+        }
+        const boulderT = 1 - rollbackProgress;
+        const bPos = lerpHill(boulderT);
+        boulderX = bPos.x + 10;
+        boulderY = bPos.y;
+        // Sisyphus stands at top watching
+        const sPos = lerpHill(1);
+        const sadSlump = (1 - mood) * 10;
+        sisX = sPos.x - 20;
+        sisY = sPos.y + sadSlump;
+    }
+    else if (phase === 'waiting') {
+        waitTimer += dt;
+        if (waitTimer > 2000) {
+            phase = 'pushing';
+            pushProgress = 0;
+            const pos = lerpHill(0);
+            sisX = pos.x - 20;
+            sisY = pos.y;
+            boulderX = pos.x + 10;
+            boulderY = pos.y;
+        }
+    }
+
+    updateMoodLabel();
+}
+
+function draw(time) {
+    ctx.clearRect(0, 0, W, H);
+    drawSky(time);
+    drawClouds(time);
+    drawGround(time);
+    drawHill(time);
+    drawTrees(time);
+    drawFlowers(time);
+    drawBirds(time);
+    drawRain(time);
+    drawLightning(time);
+    drawBoulder(time);
+    drawSisyphus(time);
+}
+
+function loop(time) {
+    update(time);
+    draw(time);
+    requestAnimationFrame(loop);
+}
+
+// Initialize positions
+const startPos = lerpHill(0);
+sisX = startPos.x - 20;
+sisY = startPos.y;
+boulderX = startPos.x + 10;
+boulderY = startPos.y;
+
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>
