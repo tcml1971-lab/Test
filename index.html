@@ -1,0 +1,1444 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kurts Büro-Chaos</title>
+<link href="https://fonts.googleapis.com/css2?family=Bangers&family=Comic+Neue:wght@400;700&display=swap" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+    background: #F0E68C;
+    background-image: radial-gradient(circle, #e0d67c 1px, transparent 1px);
+    background-size: 12px 12px;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: 'Comic Neue', 'Comic Sans MS', cursive;
+    overflow: hidden;
+}
+
+#game {
+    width: 900px;
+    max-width: 95vw;
+    min-height: 600px;
+    background: white;
+    border: 5px solid black;
+    border-radius: 12px;
+    box-shadow: 8px 8px 0 black;
+    position: relative;
+    overflow: hidden;
+}
+
+.comic-title {
+    font-family: 'Bangers', 'Impact', sans-serif;
+    letter-spacing: 2px;
+}
+
+/* ========== TITLE SCREEN ========== */
+.title-screen {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 600px;
+    background: linear-gradient(135deg, #FFD700 0%, #FF69B4 50%, #87CEEB 100%);
+    padding: 40px;
+    text-align: center;
+}
+
+.title-screen h1 {
+    font-family: 'Bangers', 'Impact', sans-serif;
+    font-size: 4em;
+    color: white;
+    text-shadow: 4px 4px 0 black, -2px -2px 0 black, 2px -2px 0 black, -2px 2px 0 black;
+    margin-bottom: 10px;
+    transform: rotate(-3deg);
+    letter-spacing: 3px;
+}
+
+.title-screen .subtitle {
+    font-size: 1.3em;
+    font-weight: 700;
+    color: #333;
+    background: white;
+    border: 3px solid black;
+    border-radius: 20px;
+    padding: 10px 25px;
+    margin-bottom: 30px;
+    box-shadow: 3px 3px 0 black;
+}
+
+.title-characters {
+    display: flex;
+    gap: 40px;
+    margin-bottom: 30px;
+    align-items: flex-end;
+}
+
+.title-char-box {
+    background: white;
+    border: 3px solid black;
+    border-radius: 12px;
+    padding: 15px;
+    box-shadow: 3px 3px 0 black;
+    text-align: center;
+}
+
+.title-char-box .name {
+    font-family: 'Bangers', 'Impact', sans-serif;
+    font-size: 1.4em;
+    margin-top: 8px;
+    letter-spacing: 1px;
+}
+
+.title-char-box .role {
+    font-size: 0.85em;
+    color: #666;
+    font-weight: 700;
+}
+
+.btn {
+    font-family: 'Bangers', 'Impact', sans-serif;
+    font-size: 1.8em;
+    padding: 15px 50px;
+    background: #FF4444;
+    color: white;
+    border: 4px solid black;
+    border-radius: 12px;
+    cursor: pointer;
+    box-shadow: 4px 4px 0 black;
+    transition: all 0.1s;
+    letter-spacing: 2px;
+    text-shadow: 2px 2px 0 rgba(0,0,0,0.3);
+}
+
+.btn:hover {
+    transform: translate(2px, 2px);
+    box-shadow: 2px 2px 0 black;
+}
+
+.btn:active {
+    transform: translate(4px, 4px);
+    box-shadow: 0 0 0 black;
+}
+
+/* ========== GAME HUD ========== */
+.hud {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 20px;
+    background: #333;
+    color: white;
+    border-bottom: 4px solid black;
+}
+
+.hud-round {
+    font-family: 'Bangers', 'Impact', sans-serif;
+    font-size: 1.3em;
+    letter-spacing: 1px;
+}
+
+.patience-bar-container {
+    flex: 1;
+    max-width: 350px;
+    margin: 0 20px;
+}
+
+.patience-label {
+    font-size: 0.8em;
+    font-weight: 700;
+    margin-bottom: 3px;
+    text-align: center;
+}
+
+.patience-bar-bg {
+    width: 100%;
+    height: 22px;
+    background: #555;
+    border-radius: 11px;
+    border: 2px solid black;
+    overflow: hidden;
+}
+
+.patience-bar-fill {
+    height: 100%;
+    border-radius: 9px;
+    transition: width 0.8s ease, background-color 0.8s ease;
+}
+
+.hud-score {
+    font-family: 'Bangers', 'Impact', sans-serif;
+    font-size: 1.3em;
+}
+
+/* ========== SCENE PANEL ========== */
+.scene {
+    position: relative;
+    min-height: 520px;
+    overflow: hidden;
+}
+
+/* ========== OFFICE SCENE ========== */
+.office-scene {
+    display: flex;
+    height: 520px;
+}
+
+.office-room {
+    flex: 1;
+    position: relative;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+.office-room.kurt-office {
+    background: linear-gradient(180deg, #FFF8DC 0%, #FAEBD7 100%);
+}
+
+.office-room.carsten-office {
+    background: linear-gradient(180deg, #E8F5E9 0%, #C8E6C9 100%);
+    border-left: 4px solid black;
+}
+
+.room-label {
+    position: absolute;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-family: 'Bangers', 'Impact', sans-serif;
+    font-size: 1.1em;
+    background: rgba(0,0,0,0.7);
+    color: white;
+    padding: 4px 16px;
+    border-radius: 8px;
+    letter-spacing: 1px;
+}
+
+.desk {
+    width: 200px;
+    height: 70px;
+    background: #8B5E3C;
+    border: 3px solid #5D3A1A;
+    border-radius: 6px;
+    position: absolute;
+    bottom: 30px;
+    box-shadow: 0 4px 0 #5D3A1A;
+}
+
+.desk-items {
+    position: absolute;
+    top: -15px;
+    left: 10px;
+    right: 10px;
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+}
+
+.paper {
+    width: 16px;
+    height: 20px;
+    background: white;
+    border: 1.5px solid #999;
+    transform: rotate(var(--rot, 0deg));
+}
+
+.computer {
+    width: 40px;
+    height: 32px;
+    background: #333;
+    border: 2px solid black;
+    border-radius: 3px;
+    position: relative;
+}
+
+.computer::after {
+    content: '';
+    position: absolute;
+    bottom: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 20px;
+    height: 6px;
+    background: #555;
+    border-radius: 0 0 3px 3px;
+}
+
+.computer-screen {
+    width: 34px;
+    height: 24px;
+    background: #4FC3F7;
+    margin: 2px auto;
+    border-radius: 1px;
+}
+
+.character-container {
+    position: absolute;
+    bottom: 95px;
+    z-index: 10;
+}
+
+/* ========== SPEECH BUBBLE ========== */
+.speech-bubble {
+    position: absolute;
+    background: white;
+    border: 3px solid black;
+    border-radius: 20px;
+    padding: 14px 18px;
+    font-size: 1em;
+    font-weight: 700;
+    max-width: 280px;
+    z-index: 20;
+    box-shadow: 3px 3px 0 rgba(0,0,0,0.2);
+    animation: popIn 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+}
+
+.speech-bubble::after {
+    content: '';
+    position: absolute;
+    bottom: -18px;
+    left: 30px;
+    width: 0;
+    height: 0;
+    border-left: 12px solid transparent;
+    border-right: 12px solid transparent;
+    border-top: 18px solid black;
+}
+
+.speech-bubble::before {
+    content: '';
+    position: absolute;
+    bottom: -14px;
+    left: 32px;
+    width: 0;
+    height: 0;
+    border-left: 10px solid transparent;
+    border-right: 10px solid transparent;
+    border-top: 15px solid white;
+    z-index: 1;
+}
+
+@keyframes popIn {
+    0% { transform: scale(0); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+/* ========== DISTURBANCE SCENE ========== */
+.disturbance-scene {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 520px;
+    background: linear-gradient(180deg, #E8F5E9 0%, #C8E6C9 100%);
+    position: relative;
+    padding-top: 30px;
+}
+
+.disturbance-scene .scene-description {
+    font-family: 'Bangers', 'Impact', sans-serif;
+    font-size: 1.2em;
+    background: #FFD700;
+    border: 3px solid black;
+    padding: 10px 25px;
+    border-radius: 8px;
+    box-shadow: 3px 3px 0 black;
+    margin-bottom: 20px;
+    text-align: center;
+    max-width: 80%;
+    letter-spacing: 1px;
+}
+
+.characters-row {
+    display: flex;
+    gap: 30px;
+    align-items: flex-end;
+    margin-top: auto;
+    margin-bottom: 50px;
+    position: relative;
+}
+
+.action-word {
+    position: absolute;
+    font-family: 'Bangers', 'Impact', sans-serif;
+    font-size: 2.5em;
+    color: #FF4444;
+    text-shadow: 3px 3px 0 black;
+    transform: rotate(-15deg);
+    animation: shake 0.5s infinite;
+    z-index: 30;
+    top: -20px;
+    right: -30px;
+}
+
+@keyframes shake {
+    0%, 100% { transform: rotate(-15deg) scale(1); }
+    25% { transform: rotate(-12deg) scale(1.05); }
+    75% { transform: rotate(-18deg) scale(0.95); }
+}
+
+/* ========== CHOICE PANEL ========== */
+.choice-panel {
+    display: flex;
+    flex-direction: column;
+    min-height: 520px;
+    background: linear-gradient(180deg, #FFF3E0 0%, #FFE0B2 100%);
+    padding: 25px;
+}
+
+.choice-header {
+    font-family: 'Bangers', 'Impact', sans-serif;
+    font-size: 1.5em;
+    text-align: center;
+    margin-bottom: 8px;
+    color: #E65100;
+    letter-spacing: 1px;
+}
+
+.choice-instruction {
+    text-align: center;
+    font-weight: 700;
+    margin-bottom: 20px;
+    font-size: 1.05em;
+    color: #555;
+}
+
+.choices-container {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    max-width: 700px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+.choice-btn {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 16px 22px;
+    background: white;
+    border: 3px solid black;
+    border-radius: 12px;
+    cursor: pointer;
+    font-family: 'Comic Neue', 'Comic Sans MS', cursive;
+    font-size: 1.05em;
+    font-weight: 700;
+    text-align: left;
+    transition: all 0.15s;
+    box-shadow: 3px 3px 0 black;
+}
+
+.choice-btn:hover {
+    transform: translate(1px, 1px);
+    box-shadow: 2px 2px 0 black;
+    background: #FFF9C4;
+}
+
+.choice-btn:active {
+    transform: translate(3px, 3px);
+    box-shadow: 0 0 0 black;
+}
+
+.choice-number {
+    font-family: 'Bangers', 'Impact', sans-serif;
+    font-size: 1.8em;
+    width: 45px;
+    height: 45px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    border: 3px solid black;
+    flex-shrink: 0;
+    color: white;
+    text-shadow: 1px 1px 0 rgba(0,0,0,0.3);
+}
+
+.choice-preview {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+/* ========== RESULT SCENE ========== */
+.result-scene {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 520px;
+    padding: 30px;
+    text-align: center;
+}
+
+.result-scene.good { background: linear-gradient(180deg, #E8F5E9 0%, #A5D6A7 100%); }
+.result-scene.medium { background: linear-gradient(180deg, #FFF8E1 0%, #FFD54F 100%); }
+.result-scene.bad { background: linear-gradient(180deg, #FFEBEE 0%, #EF9A9A 100%); }
+
+.result-icon {
+    font-size: 4em;
+    margin-bottom: 15px;
+    animation: popIn 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+}
+
+.result-title {
+    font-family: 'Bangers', 'Impact', sans-serif;
+    font-size: 2.2em;
+    margin-bottom: 15px;
+    letter-spacing: 2px;
+}
+
+.result-scene.good .result-title { color: #2E7D32; }
+.result-scene.medium .result-title { color: #F57F17; }
+.result-scene.bad .result-title { color: #C62828; }
+
+.result-text {
+    font-size: 1.15em;
+    font-weight: 700;
+    max-width: 550px;
+    line-height: 1.5;
+    margin-bottom: 10px;
+    color: #333;
+}
+
+.result-effect {
+    font-family: 'Bangers', 'Impact', sans-serif;
+    font-size: 1.1em;
+    margin-top: 10px;
+    padding: 8px 20px;
+    border-radius: 8px;
+    border: 2px solid black;
+}
+
+.result-scene.good .result-effect { background: #C8E6C9; color: #1B5E20; }
+.result-scene.medium .result-effect { background: #FFF9C4; color: #F57F17; }
+.result-scene.bad .result-effect { background: #FFCDD2; color: #B71C1C; }
+
+.btn-next {
+    font-family: 'Bangers', 'Impact', sans-serif;
+    font-size: 1.4em;
+    padding: 12px 40px;
+    background: #333;
+    color: white;
+    border: 3px solid black;
+    border-radius: 10px;
+    cursor: pointer;
+    box-shadow: 3px 3px 0 black;
+    margin-top: 25px;
+    letter-spacing: 1px;
+    transition: all 0.1s;
+}
+
+.btn-next:hover {
+    transform: translate(2px, 2px);
+    box-shadow: 1px 1px 0 black;
+}
+
+/* ========== END SCREENS ========== */
+.end-screen {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 600px;
+    padding: 40px;
+    text-align: center;
+}
+
+.end-screen.win {
+    background: linear-gradient(135deg, #A5D6A7 0%, #66BB6A 50%, #43A047 100%);
+}
+
+.end-screen.survive {
+    background: linear-gradient(135deg, #FFF9C4 0%, #FFD54F 50%, #FFB300 100%);
+}
+
+.end-screen.lose {
+    background: linear-gradient(135deg, #FFCDD2 0%, #EF5350 50%, #C62828 100%);
+}
+
+.end-screen h1 {
+    font-family: 'Bangers', 'Impact', sans-serif;
+    font-size: 3em;
+    color: white;
+    text-shadow: 3px 3px 0 black;
+    margin-bottom: 20px;
+    letter-spacing: 2px;
+}
+
+.end-screen .end-text {
+    font-size: 1.3em;
+    font-weight: 700;
+    color: #333;
+    background: rgba(255,255,255,0.85);
+    border: 3px solid black;
+    border-radius: 15px;
+    padding: 20px 30px;
+    max-width: 500px;
+    margin-bottom: 30px;
+    line-height: 1.5;
+    box-shadow: 3px 3px 0 rgba(0,0,0,0.2);
+}
+
+.end-characters {
+    display: flex;
+    gap: 30px;
+    margin-bottom: 25px;
+    align-items: flex-end;
+}
+
+.confetti {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    border-radius: 2px;
+    animation: confettiFall 3s ease-in forwards;
+}
+
+@keyframes confettiFall {
+    0% { transform: translateY(-100px) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(600px) rotate(720deg); opacity: 0; }
+}
+
+/* ========== ANIMATIONS ========== */
+.fade-in {
+    animation: fadeIn 0.5s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.slide-in-left {
+    animation: slideInLeft 0.6s ease;
+}
+
+@keyframes slideInLeft {
+    from { transform: translateX(-100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+
+.slide-in-right {
+    animation: slideInRight 0.6s ease;
+}
+
+@keyframes slideInRight {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+
+.bounce {
+    animation: bounce 0.6s ease;
+}
+
+@keyframes bounce {
+    0% { transform: scale(0.3); }
+    50% { transform: scale(1.1); }
+    70% { transform: scale(0.9); }
+    100% { transform: scale(1); }
+}
+
+.swivel {
+    animation: swivel 2s ease-in-out infinite;
+}
+
+@keyframes swivel {
+    0%, 100% { transform: rotate(-5deg); }
+    50% { transform: rotate(5deg); }
+}
+
+.work-typing {
+    animation: typing 0.8s steps(3) infinite;
+}
+
+@keyframes typing {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-3px); }
+}
+
+/* ========== RESPONSIVE ========== */
+@media (max-width: 700px) {
+    .title-screen h1 { font-size: 2.5em; }
+    .choice-btn { font-size: 0.95em; padding: 12px 16px; }
+    .result-title { font-size: 1.6em; }
+    .title-characters { flex-direction: column; gap: 15px; align-items: center; }
+}
+</style>
+</head>
+<body>
+
+<div id="game"></div>
+
+<script>
+// ===== SVG CHARACTER FUNCTIONS =====
+
+function drawKurt(expression = 'neutral', scale = 1) {
+    const w = 120 * scale;
+    const h = 180 * scale;
+
+    let eyebrowL, eyebrowR, mouth, extras = '';
+
+    switch (expression) {
+        case 'bored':
+            eyebrowL = `<line x1="37" y1="52" x2="48" y2="50" stroke="#333" stroke-width="2.5" stroke-linecap="round"/>`;
+            eyebrowR = `<line x1="72" y1="50" x2="83" y2="52" stroke="#333" stroke-width="2.5" stroke-linecap="round"/>`;
+            mouth = `<path d="M 50 80 Q 60 76 70 80" stroke="#333" stroke-width="2" fill="none"/>`;
+            break;
+        case 'happy':
+            eyebrowL = `<line x1="37" y1="48" x2="48" y2="50" stroke="#333" stroke-width="2.5" stroke-linecap="round"/>`;
+            eyebrowR = `<line x1="72" y1="50" x2="83" y2="48" stroke="#333" stroke-width="2.5" stroke-linecap="round"/>`;
+            mouth = `<path d="M 48 77 Q 60 88 72 77" stroke="#333" stroke-width="2.5" fill="none"/>`;
+            break;
+        case 'mischievous':
+            eyebrowL = `<line x1="37" y1="46" x2="48" y2="50" stroke="#333" stroke-width="2.5" stroke-linecap="round"/>`;
+            eyebrowR = `<line x1="72" y1="50" x2="83" y2="46" stroke="#333" stroke-width="2.5" stroke-linecap="round"/>`;
+            mouth = `<path d="M 50 78 Q 60 86 72 76" stroke="#333" stroke-width="2.5" fill="none"/>`;
+            break;
+        case 'busy':
+            eyebrowL = `<line x1="37" y1="49" x2="48" y2="47" stroke="#333" stroke-width="2.5" stroke-linecap="round"/>`;
+            eyebrowR = `<line x1="72" y1="47" x2="83" y2="49" stroke="#333" stroke-width="2.5" stroke-linecap="round"/>`;
+            mouth = `<ellipse cx="60" cy="80" rx="6" ry="4" fill="#333"/>`;
+            break;
+        case 'chaos':
+            eyebrowL = `<line x1="37" y1="46" x2="48" y2="51" stroke="#333" stroke-width="2.5" stroke-linecap="round"/>`;
+            eyebrowR = `<line x1="72" y1="51" x2="83" y2="46" stroke="#333" stroke-width="2.5" stroke-linecap="round"/>`;
+            mouth = `<path d="M 48 78 Q 55 85 60 77 Q 65 85 72 78" stroke="#333" stroke-width="2.5" fill="none"/>`;
+            extras = `<text x="15" y="25" font-family="Bangers, Impact, sans-serif" font-size="14" fill="#FF4444" transform="rotate(-20, 15, 25)">!!!</text>`;
+            break;
+        default: // neutral
+            eyebrowL = `<line x1="37" y1="50" x2="48" y2="50" stroke="#333" stroke-width="2.5" stroke-linecap="round"/>`;
+            eyebrowR = `<line x1="72" y1="50" x2="83" y2="50" stroke="#333" stroke-width="2.5" stroke-linecap="round"/>`;
+            mouth = `<path d="M 50 78 Q 60 82 70 78" stroke="#333" stroke-width="2" fill="none"/>`;
+    }
+
+    return `<svg viewBox="0 0 120 180" width="${w}" height="${h}" xmlns="http://www.w3.org/2000/svg">
+        <!-- Body - Pink Polo -->
+        <rect x="30" y="100" width="60" height="65" rx="8" fill="#FF69B4" stroke="black" stroke-width="2.5"/>
+        <!-- Polo collar (popped up!) -->
+        <polygon points="38,100 48,90 55,100" fill="#FF69B4" stroke="black" stroke-width="2"/>
+        <polygon points="82,100 72,90 65,100" fill="#FF69B4" stroke="black" stroke-width="2"/>
+        <!-- Collar fold highlight -->
+        <line x1="43" y1="96" x2="50" y2="93" stroke="#FF1493" stroke-width="1.5"/>
+        <line x1="77" y1="96" x2="70" y2="93" stroke="#FF1493" stroke-width="1.5"/>
+        <!-- Polo buttons -->
+        <circle cx="60" cy="110" r="2" fill="white" stroke="black" stroke-width="1"/>
+        <circle cx="60" cy="118" r="2" fill="white" stroke="black" stroke-width="1"/>
+        <!-- Arms -->
+        <rect x="12" y="103" width="20" height="45" rx="10" fill="#F5D0A9" stroke="black" stroke-width="2.5"/>
+        <rect x="88" y="103" width="20" height="45" rx="10" fill="#F5D0A9" stroke="black" stroke-width="2.5"/>
+        <!-- Neck -->
+        <rect x="50" y="88" width="20" height="16" rx="4" fill="#F5D0A9" stroke="black" stroke-width="2"/>
+        <!-- Head (bald!) -->
+        <ellipse cx="60" cy="50" rx="30" ry="33" fill="#F5D0A9" stroke="black" stroke-width="2.5"/>
+        <!-- Bald head shine -->
+        <ellipse cx="50" cy="28" rx="12" ry="6" fill="rgba(255,255,255,0.3)" transform="rotate(-15,50,28)"/>
+        <!-- Stubble -->
+        <ellipse cx="60" cy="78" rx="18" ry="10" fill="rgba(120,120,120,0.15)"/>
+        <circle cx="48" cy="74" r="0.8" fill="#999"/>
+        <circle cx="52" cy="76" r="0.8" fill="#999"/>
+        <circle cx="56" cy="78" r="0.8" fill="#999"/>
+        <circle cx="60" cy="79" r="0.8" fill="#999"/>
+        <circle cx="64" cy="78" r="0.8" fill="#999"/>
+        <circle cx="68" cy="76" r="0.8" fill="#999"/>
+        <circle cx="72" cy="74" r="0.8" fill="#999"/>
+        <circle cx="50" cy="79" r="0.8" fill="#999"/>
+        <circle cx="54" cy="81" r="0.8" fill="#999"/>
+        <circle cx="58" cy="82" r="0.8" fill="#999"/>
+        <circle cx="62" cy="82" r="0.8" fill="#999"/>
+        <circle cx="66" cy="81" r="0.8" fill="#999"/>
+        <circle cx="70" cy="79" r="0.8" fill="#999"/>
+        <!-- Ears -->
+        <ellipse cx="30" cy="55" rx="6" ry="8" fill="#F5D0A9" stroke="black" stroke-width="2"/>
+        <ellipse cx="90" cy="55" rx="6" ry="8" fill="#F5D0A9" stroke="black" stroke-width="2"/>
+        <!-- Eyes -->
+        <ellipse cx="47" cy="55" rx="6" ry="7" fill="white" stroke="black" stroke-width="2"/>
+        <ellipse cx="73" cy="55" rx="6" ry="7" fill="white" stroke="black" stroke-width="2"/>
+        <circle cx="48" cy="56" r="3" fill="#4A3728"/>
+        <circle cx="74" cy="56" r="3" fill="#4A3728"/>
+        <circle cx="49" cy="55" r="1" fill="white"/>
+        <circle cx="75" cy="55" r="1" fill="white"/>
+        <!-- Eyebrows -->
+        ${eyebrowL}
+        ${eyebrowR}
+        <!-- Nose -->
+        <path d="M 58 60 Q 60 68 62 60" stroke="#D4A574" stroke-width="2" fill="none"/>
+        <!-- Mouth -->
+        ${mouth}
+        ${extras}
+    </svg>`;
+}
+
+function drawCarsten(expression = 'neutral', scale = 1) {
+    const w = 120 * scale;
+    const h = 200 * scale;
+
+    let eyebrowL, eyebrowR, mouth, extras = '';
+
+    switch (expression) {
+        case 'working':
+            eyebrowL = `<line x1="37" y1="42" x2="48" y2="42" stroke="#333" stroke-width="2.5" stroke-linecap="round"/>`;
+            eyebrowR = `<line x1="72" y1="42" x2="83" y2="42" stroke="#333" stroke-width="2.5" stroke-linecap="round"/>`;
+            mouth = `<path d="M 50 75 Q 60 78 70 75" stroke="#333" stroke-width="2" fill="none"/>`;
+            break;
+        case 'frustrated':
+            eyebrowL = `<line x1="37" y1="38" x2="48" y2="43" stroke="#333" stroke-width="2.5" stroke-linecap="round"/>`;
+            eyebrowR = `<line x1="72" y1="43" x2="83" y2="38" stroke="#333" stroke-width="2.5" stroke-linecap="round"/>`;
+            mouth = `<path d="M 50 78 Q 60 72 70 78" stroke="#333" stroke-width="2.5" fill="none"/>`;
+            extras = `<text x="95" y="20" font-family="Bangers, Impact, sans-serif" font-size="16" fill="#FF4444">!</text>`;
+            break;
+        case 'desperate':
+            eyebrowL = `<line x1="40" y1="36" x2="48" y2="42" stroke="#333" stroke-width="2.5" stroke-linecap="round"/>`;
+            eyebrowR = `<line x1="72" y1="42" x2="80" y2="36" stroke="#333" stroke-width="2.5" stroke-linecap="round"/>`;
+            mouth = `<ellipse cx="60" cy="77" rx="8" ry="5" fill="#333"/>`;
+            extras = `
+                <!-- Sweat drop -->
+                <path d="M 92 35 Q 95 28 98 35 Q 95 40 92 35" fill="#87CEEB" stroke="#333" stroke-width="1"/>
+            `;
+            break;
+        case 'relieved':
+            eyebrowL = `<line x1="37" y1="41" x2="48" y2="42" stroke="#333" stroke-width="2.5" stroke-linecap="round"/>`;
+            eyebrowR = `<line x1="72" y1="42" x2="83" y2="41" stroke="#333" stroke-width="2.5" stroke-linecap="round"/>`;
+            mouth = `<path d="M 48 74 Q 60 84 72 74" stroke="#333" stroke-width="2.5" fill="none"/>`;
+            extras = `<text x="88" y="25" font-family="serif" font-size="14" fill="#4CAF50">♪</text>`;
+            break;
+        case 'happy':
+            eyebrowL = `<line x1="37" y1="39" x2="48" y2="41" stroke="#333" stroke-width="2.5" stroke-linecap="round"/>`;
+            eyebrowR = `<line x1="72" y1="41" x2="83" y2="39" stroke="#333" stroke-width="2.5" stroke-linecap="round"/>`;
+            mouth = `<path d="M 46 73 Q 60 90 74 73" stroke="#333" stroke-width="2.5" fill="none"/>`;
+            break;
+        case 'crying':
+            eyebrowL = `<line x1="40" y1="36" x2="48" y2="43" stroke="#333" stroke-width="2.5" stroke-linecap="round"/>`;
+            eyebrowR = `<line x1="72" y1="43" x2="80" y2="36" stroke="#333" stroke-width="2.5" stroke-linecap="round"/>`;
+            mouth = `<path d="M 50 80 Q 60 72 70 80" stroke="#333" stroke-width="2.5" fill="none"/>`;
+            extras = `
+                <line x1="45" y1="56" x2="43" y2="68" stroke="#87CEEB" stroke-width="2" stroke-linecap="round"/>
+                <line x1="75" y1="56" x2="77" y2="68" stroke="#87CEEB" stroke-width="2" stroke-linecap="round"/>
+            `;
+            break;
+        default: // neutral
+            eyebrowL = `<line x1="37" y1="42" x2="48" y2="42" stroke="#333" stroke-width="2.5" stroke-linecap="round"/>`;
+            eyebrowR = `<line x1="72" y1="42" x2="83" y2="42" stroke="#333" stroke-width="2.5" stroke-linecap="round"/>`;
+            mouth = `<path d="M 50 75 Q 60 79 70 75" stroke="#333" stroke-width="2" fill="none"/>`;
+    }
+
+    return `<svg viewBox="0 0 120 200" width="${w}" height="${h}" xmlns="http://www.w3.org/2000/svg">
+        <!-- Body - T-Shirt -->
+        <rect x="28" y="98" width="64" height="75" rx="8" fill="#4A90D9" stroke="black" stroke-width="2.5"/>
+        <!-- T-shirt neckline -->
+        <path d="M 45 98 Q 60 108 75 98" stroke="black" stroke-width="2" fill="#4A90D9"/>
+        <!-- T-shirt sleeve lines -->
+        <line x1="28" y1="118" x2="38" y2="115" stroke="#3A7BC8" stroke-width="1.5"/>
+        <line x1="92" y1="118" x2="82" y2="115" stroke="#3A7BC8" stroke-width="1.5"/>
+        <!-- Arms -->
+        <rect x="10" y="101" width="20" height="50" rx="10" fill="#F5D0A9" stroke="black" stroke-width="2.5"/>
+        <rect x="90" y="101" width="20" height="50" rx="10" fill="#F5D0A9" stroke="black" stroke-width="2.5"/>
+        <!-- Neck -->
+        <rect x="48" y="85" width="24" height="18" rx="5" fill="#F5D0A9" stroke="black" stroke-width="2"/>
+        <!-- Head -->
+        <ellipse cx="60" cy="47" rx="30" ry="33" fill="#F5D0A9" stroke="black" stroke-width="2.5"/>
+        <!-- Hair (short, parted) -->
+        <path d="M 30 38 Q 32 12 60 10 Q 88 12 90 38 L 90 33 Q 88 8 60 6 Q 32 8 30 33 Z" fill="#6D4C2F" stroke="black" stroke-width="2"/>
+        <!-- Part line -->
+        <line x1="52" y1="8" x2="48" y2="22" stroke="#5A3E25" stroke-width="1.5"/>
+        <!-- Full beard -->
+        <path d="M 35 58 Q 33 68 38 80 Q 45 90 60 92 Q 75 90 82 80 Q 87 68 85 58 L 85 60 Q 83 72 78 80 Q 70 87 60 88 Q 50 87 42 80 Q 37 72 35 60 Z" fill="#6D4C2F" stroke="black" stroke-width="2"/>
+        <!-- Beard texture -->
+        <path d="M 42 65 Q 45 70 42 75" stroke="#5A3E25" stroke-width="1" fill="none"/>
+        <path d="M 55 70 Q 58 76 55 82" stroke="#5A3E25" stroke-width="1" fill="none"/>
+        <path d="M 68 70 Q 65 76 68 82" stroke="#5A3E25" stroke-width="1" fill="none"/>
+        <path d="M 78 65 Q 75 70 78 75" stroke="#5A3E25" stroke-width="1" fill="none"/>
+        <!-- Ears -->
+        <ellipse cx="30" cy="52" rx="5" ry="8" fill="#F5D0A9" stroke="black" stroke-width="2"/>
+        <ellipse cx="90" cy="52" rx="5" ry="8" fill="#F5D0A9" stroke="black" stroke-width="2"/>
+        <!-- Eyes -->
+        <ellipse cx="47" cy="48" rx="6" ry="7" fill="white" stroke="black" stroke-width="2"/>
+        <ellipse cx="73" cy="48" rx="6" ry="7" fill="white" stroke="black" stroke-width="2"/>
+        <circle cx="48" cy="49" r="3" fill="#4A6741"/>
+        <circle cx="74" cy="49" r="3" fill="#4A6741"/>
+        <circle cx="49" cy="48" r="1" fill="white"/>
+        <circle cx="75" cy="48" r="1" fill="white"/>
+        <!-- Eyebrows -->
+        ${eyebrowL}
+        ${eyebrowR}
+        <!-- Nose -->
+        <path d="M 57 53 Q 60 62 63 53" stroke="#D4A574" stroke-width="2" fill="none"/>
+        <!-- Mouth (visible through beard area) -->
+        ${mouth}
+        ${extras}
+    </svg>`;
+}
+
+// ===== GAME DATA =====
+
+const ROUNDS = [
+    {
+        disturbance: {
+            narration: "Kurt schlendert gelangweilt in Carstens Büro...",
+            speech: "Na, Carsten? Arbeitest du etwa? Das sieht ja anstrengend aus!",
+            kurtExpr: 'mischievous',
+            carstenExpr: 'frustrated'
+        },
+        tasks: [
+            {
+                text: "Sortiere alle Büroklammern nach Größe UND Farbe!",
+                quality: 'good',
+                result: "Kurt vertieft sich total in die Büroklammern-Sortierung. Er legt kleine Häufchen auf seinem Schreibtisch an und murmelt zufrieden vor sich hin.",
+                kurtExpr: 'busy',
+                carstenExpr: 'relieved'
+            },
+            {
+                text: "Hol dir doch einen Kaffee aus der Küche!",
+                quality: 'medium',
+                result: "Kurt geht Kaffee holen... ist aber nach 3 Minuten schon wieder da. 'Carsten, willst du auch einen? Nein? Na gut... was machst du gerade?'",
+                kurtExpr: 'happy',
+                carstenExpr: 'frustrated'
+            },
+            {
+                text: "Schreib die Elternbriefe für die Klassenfahrt!",
+                quality: 'bad',
+                result: "Kurt schreibt wirre Elternbriefe voller Rechtschreibfehler und falscher Daten. 15 besorgte Eltern rufen an. Carsten muss ALLES korrigieren!",
+                kurtExpr: 'chaos',
+                carstenExpr: 'desperate'
+            }
+        ]
+    },
+    {
+        disturbance: {
+            narration: "Kurt stürmt mit seinem Handy herein...",
+            speech: "CARSTEN! Guck mal! Ein Hund auf einem Skateboard! Hahaha! Warte, ich spul nochmal zurück!",
+            kurtExpr: 'happy',
+            carstenExpr: 'frustrated'
+        },
+        tasks: [
+            {
+                text: "Erstelle eine Inventarliste aller Kugelschreiber in der Schule!",
+                quality: 'good',
+                result: "Kurt zählt hingebungsvoll Kugelschreiber in jedem einzelnen Klassenzimmer. Er erstellt sogar eine Excel-Tabelle nach Farben sortiert!",
+                kurtExpr: 'busy',
+                carstenExpr: 'relieved'
+            },
+            {
+                text: "Schau dir das Video nochmal in Ruhe an deinem Schreibtisch an!",
+                quality: 'medium',
+                result: "Kurt guckt Videos an seinem Platz... aber kommt nach 5 Minuten zurück: 'Du MUSST dir diese Stelle ansehen! Der Hund macht einen Kickflip!'",
+                kurtExpr: 'happy',
+                carstenExpr: 'frustrated'
+            },
+            {
+                text: "Gestalte die Schulhomepage mal neu!",
+                quality: 'bad',
+                result: "Kurt macht die komplette Homepage pink mit Comic Sans und animierten GIFs von tanzenden Bananen. Die Elternvertretung ist entsetzt!",
+                kurtExpr: 'chaos',
+                carstenExpr: 'desperate'
+            }
+        ]
+    },
+    {
+        disturbance: {
+            narration: "Kurt trommelt rhythmisch auf Carstens Schreibtisch...",
+            speech: "Mir ist SOOO langweilig! Wollen wir nicht was zusammen machen? Tischtennis im Lehrerzimmer?",
+            kurtExpr: 'bored',
+            carstenExpr: 'desperate'
+        },
+        tasks: [
+            {
+                text: "Das Lehrerzimmer braucht dringend eine Grundreinigung!",
+                quality: 'good',
+                result: "Kurt putzt mit Feuereifer das komplette Lehrerzimmer - sortiert Tassen, wischt Tische, ordnet Fächer. Endlich herrscht Ruhe!",
+                kurtExpr: 'busy',
+                carstenExpr: 'relieved'
+            },
+            {
+                text: "Mach doch ein paar Dehnübungen an deinem Schreibtisch!",
+                quality: 'medium',
+                result: "Kurt dehnt sich 2 Minuten... dann kommt er zurück: 'Carsten, guck mal wie weit ich mich bücken kann! Ich bin total beweglich!'",
+                kurtExpr: 'happy',
+                carstenExpr: 'frustrated'
+            },
+            {
+                text: "Halte eine spontane Motivationsrede über die Sprechanlage!",
+                quality: 'bad',
+                result: "Kurt hält eine 20-minütige wirre Rede über 'Teamgeist und Synergien'. Die ganze Schule ist genervt. Es hagelt Beschwerden bei Carsten!",
+                kurtExpr: 'chaos',
+                carstenExpr: 'desperate'
+            }
+        ]
+    },
+    {
+        disturbance: {
+            narration: "Kurt schiebt seinen Bürostuhl ins Nebenzimmer...",
+            speech: "Dein Büro ist viel gemütlicher als meins! Ich glaube, wir sollten die Möbel umstellen. Was meinst du?",
+            kurtExpr: 'mischievous',
+            carstenExpr: 'frustrated'
+        },
+        tasks: [
+            {
+                text: "Spitze ALLE Bleistifte im gesamten Schulgebäude an!",
+                quality: 'good',
+                result: "Kurt wandert von Klassenraum zu Klassenraum und spitzt gewissenhaft jeden Bleistift an. Er nimmt die Aufgabe sehr ernst!",
+                kurtExpr: 'busy',
+                carstenExpr: 'relieved'
+            },
+            {
+                text: "Falte ein paar Papierflugzeuge!",
+                quality: 'medium',
+                result: "Kurt faltet begeistert 3 Flieger... und wirft sie dann in Carstens Büro. 'Der war gut, oder? Guck mal, DER fliegt noch weiter!'",
+                kurtExpr: 'happy',
+                carstenExpr: 'frustrated'
+            },
+            {
+                text: "Erstelle den neuen Stundenplan für nächste Woche!",
+                quality: 'bad',
+                result: "Kurt erstellt einen Stundenplan mit 3x Sport am Tag, Mathe nur freitags um 16 Uhr und einer 'Mittagsschlaf-Stunde'. Totales Chaos!",
+                kurtExpr: 'chaos',
+                carstenExpr: 'desperate'
+            }
+        ]
+    },
+    {
+        disturbance: {
+            narration: "Kurt singt laut vor sich hin und kommt rüber...",
+            speech: "LALALA... 🎵 Oh, störe ich? Naja, egal - Carsten, kennst du dieses Lied? Warte, ich sing's nochmal!",
+            kurtExpr: 'happy',
+            carstenExpr: 'desperate'
+        },
+        tasks: [
+            {
+                text: "Archiviere die alten Akten im Keller - die letzten 10 Jahre!",
+                quality: 'good',
+                result: "Kurt verschwindet im Keller und sortiert hingebungsvoll alte Akten. Stundenlange Beschäftigung garantiert! Carsten atmet tief durch.",
+                kurtExpr: 'busy',
+                carstenExpr: 'relieved'
+            },
+            {
+                text: "Löse das Kreuzworträtsel in der Zeitung!",
+                quality: 'medium',
+                result: "Kurt löst es in 5 Minuten und kommt sofort zu Carsten: 'Was ist ein Fluss mit 4 Buchstaben? Egal, ich hab's! Rate mal - 17 waagerecht!'",
+                kurtExpr: 'happy',
+                carstenExpr: 'frustrated'
+            },
+            {
+                text: "Organisiere spontan einen Projekttag für morgen!",
+                quality: 'bad',
+                result: "Kurt kündigt über die Sprechanlage einen Projekttag an - ohne Plan, ohne Material, ohne Information ans Kollegium. Panik bricht aus!",
+                kurtExpr: 'chaos',
+                carstenExpr: 'desperate'
+            }
+        ]
+    },
+    {
+        disturbance: {
+            narration: "Kurt kommt mit einer Kaffeetasse und setzt sich auf Carstens Schreibtisch...",
+            speech: "Weißt du was, Carsten? Ich glaube, ich brauche ein Hobby. Was machst DU so in deiner Freizeit? Erzähl mal!",
+            kurtExpr: 'bored',
+            carstenExpr: 'desperate'
+        },
+        tasks: [
+            {
+                text: "Zähle alle Fliesen im Schulgebäude - wir brauchen das für die Renovierung!",
+                quality: 'good',
+                result: "Kurt zählt gewissenhaft jede einzelne Fliese im Gebäude und notiert die Ergebnisse in einer selbst erstellten Strichliste. Carsten hat endlich Frieden!",
+                kurtExpr: 'busy',
+                carstenExpr: 'relieved'
+            },
+            {
+                text: "Gieß die Pflanzen im Sekretariat!",
+                quality: 'medium',
+                result: "Kurt gießt die 3 Pflanzen im Sekretariat... nach 2 Minuten ist er zurück: 'Fertig! Die Pflanzen sehen gut aus. So, was machen WIR jetzt?'",
+                kurtExpr: 'happy',
+                carstenExpr: 'frustrated'
+            },
+            {
+                text: "Leite die Lehrerkonferenz heute alleine!",
+                quality: 'bad',
+                result: "Kurt leitet die Konferenz und beschließt eine Pflicht-Karaoke-Pause, Jogginghosen-Freitag und eine Streichelzoo-AG. Drei Lehrer reichen ihren Urlaub ein!",
+                kurtExpr: 'chaos',
+                carstenExpr: 'crying'
+            }
+        ]
+    }
+];
+
+// ===== GAME STATE =====
+let state = {
+    scene: 'title',
+    round: 0,
+    patience: 50,
+    score: 0,
+    history: []
+};
+
+const game = document.getElementById('game');
+
+// ===== PATIENCE BAR COLOR =====
+function getPatienceColor(p) {
+    if (p >= 70) return '#4CAF50';
+    if (p >= 40) return '#FFB300';
+    return '#EF5350';
+}
+
+// ===== RENDER FUNCTIONS =====
+
+function renderTitle() {
+    game.innerHTML = `
+        <div class="title-screen fade-in">
+            <h1 class="comic-title">KURTS BÜRO-CHAOS</h1>
+            <div class="subtitle">Ein Comic-Spiel über das Überleben im Schulbüro</div>
+            <div class="title-characters">
+                <div class="title-char-box">
+                    ${drawKurt('bored', 0.9)}
+                    <div class="name">KURT</div>
+                    <div class="role">Schulleiter & Nervensäge</div>
+                </div>
+                <div class="title-char-box">
+                    ${drawCarsten('working', 0.9)}
+                    <div class="name">CARSTEN</div>
+                    <div class="role">Stellvertreter & Leidtragender</div>
+                </div>
+            </div>
+            <button class="btn" onclick="startGame()">SPIELEN!</button>
+        </div>
+    `;
+}
+
+function renderHUD() {
+    const p = Math.max(0, Math.min(100, state.patience));
+    return `
+        <div class="hud">
+            <div class="hud-round">Runde ${state.round + 1} / ${ROUNDS.length}</div>
+            <div class="patience-bar-container">
+                <div class="patience-label">CARSTENS GEDULD</div>
+                <div class="patience-bar-bg">
+                    <div class="patience-bar-fill" style="width:${p}%; background:${getPatienceColor(p)};"></div>
+                </div>
+            </div>
+            <div class="hud-score">Punkte: ${state.score}</div>
+        </div>
+    `;
+}
+
+function renderOffice() {
+    game.innerHTML = `
+        ${renderHUD()}
+        <div class="scene office-scene fade-in">
+            <div class="office-room kurt-office">
+                <div class="room-label">Kurts Büro</div>
+                <div class="character-container swivel" style="left: 50%; transform-origin: bottom center; margin-left: -50px;">
+                    ${drawKurt('bored', 0.85)}
+                </div>
+                <div class="desk" style="left: 50%; margin-left: -100px;">
+                    <div class="desk-items">
+                        <div class="paper" style="--rot: -8deg;"></div>
+                        <div class="paper" style="--rot: 5deg;"></div>
+                        <div class="paper" style="--rot: -3deg;"></div>
+                        <div class="paper" style="--rot: 12deg;"></div>
+                        <div class="paper" style="--rot: -6deg;"></div>
+                    </div>
+                </div>
+                <div class="speech-bubble" style="top: 40px; left: 50%; transform: translateX(-50%); max-width: 200px; font-size: 0.9em;">
+                    *gähn* ... So langweilig...
+                </div>
+            </div>
+            <div class="office-room carsten-office">
+                <div class="room-label">Carstens Büro</div>
+                <div class="character-container work-typing" style="left: 50%; margin-left: -50px;">
+                    ${drawCarsten('working', 0.85)}
+                </div>
+                <div class="desk" style="left: 50%; margin-left: -100px;">
+                    <div class="desk-items">
+                        <div class="computer">
+                            <div class="computer-screen"></div>
+                        </div>
+                        <div class="paper" style="--rot: 2deg;"></div>
+                        <div class="paper" style="--rot: -2deg;"></div>
+                    </div>
+                </div>
+                <div class="speech-bubble" style="top: 40px; left: 50%; transform: translateX(-50%); max-width: 200px; font-size: 0.9em;">
+                    *tipp tipp tipp*
+                </div>
+            </div>
+        </div>
+    `;
+
+    setTimeout(() => renderDisturbance(), 2500);
+}
+
+function renderDisturbance() {
+    const round = ROUNDS[state.round];
+    const d = round.disturbance;
+
+    game.innerHTML = `
+        ${renderHUD()}
+        <div class="scene disturbance-scene fade-in">
+            <div class="scene-description">${d.narration}</div>
+            <div style="position: relative; display: flex; flex-direction: column; align-items: center; flex: 1; justify-content: center;">
+                <div class="speech-bubble" style="position: relative; margin-bottom: 30px; max-width: 350px; font-size: 1.05em;">
+                    "${d.speech}"
+                </div>
+                <div class="characters-row">
+                    <div class="slide-in-left" style="position: relative;">
+                        ${drawKurt(d.kurtExpr, 1)}
+                        <div class="action-word">STÖR!</div>
+                    </div>
+                    <div class="slide-in-right">
+                        ${drawCarsten(d.carstenExpr, 1)}
+                    </div>
+                </div>
+            </div>
+            <div style="padding: 20px; text-align: center;">
+                <button class="btn-next" onclick="renderChoice()">Carsten helfen!</button>
+            </div>
+        </div>
+    `;
+}
+
+function renderChoice() {
+    const round = ROUNDS[state.round];
+    const shuffled = [...round.tasks].sort(() => Math.random() - 0.5);
+
+    const colors = { good: '#4CAF50', medium: '#FFB300', bad: '#EF5350' };
+    const bgColors = ['#FF6B6B', '#FFB74D', '#64B5F6'];
+
+    game.innerHTML = `
+        ${renderHUD()}
+        <div class="scene choice-panel fade-in">
+            <div class="choice-header">HILF CARSTEN!</div>
+            <div class="choice-instruction">Gib Kurt eine Aufgabe, um ihn abzulenken:</div>
+            <div class="choices-container">
+                ${shuffled.map((task, i) => `
+                    <button class="choice-btn bounce" style="animation-delay: ${i * 0.15}s;" onclick="chooseTask(${round.tasks.indexOf(task)})">
+                        <div class="choice-number" style="background: ${bgColors[i]};">${i + 1}</div>
+                        <div>${task.text}</div>
+                    </button>
+                `).join('')}
+            </div>
+            <div class="choice-preview" style="margin-top: 20px;">
+                <div style="display: flex; gap: 20px; align-items: flex-end;">
+                    ${drawKurt('bored', 0.7)}
+                    <div style="font-family: 'Bangers', Impact, sans-serif; font-size: 1.6em; color: #E65100; animation: shake 1s infinite;">?</div>
+                    ${drawCarsten('desperate', 0.7)}
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+function chooseTask(taskIndex) {
+    const round = ROUNDS[state.round];
+    const task = round.tasks[taskIndex];
+
+    let patienceChange = 0;
+    let scoreChange = 0;
+    let qualityLabel = '';
+
+    switch (task.quality) {
+        case 'good':
+            patienceChange = 15;
+            scoreChange = 3;
+            qualityLabel = 'SUPER IDEE!';
+            break;
+        case 'medium':
+            patienceChange = -5;
+            scoreChange = 1;
+            qualityLabel = 'NAJA...';
+            break;
+        case 'bad':
+            patienceChange = -20;
+            scoreChange = -1;
+            qualityLabel = 'OH NEIN!';
+            break;
+    }
+
+    state.patience += patienceChange;
+    state.score += scoreChange;
+    state.patience = Math.max(0, Math.min(100, state.patience));
+    state.history.push({ round: state.round, quality: task.quality });
+
+    renderResult(task, qualityLabel, patienceChange);
+}
+
+function renderResult(task, qualityLabel, patienceChange) {
+    const icons = { good: '✅', medium: '😐', bad: '💥' };
+    const effectText = patienceChange > 0
+        ? `Carstens Geduld +${patienceChange}%`
+        : `Carstens Geduld ${patienceChange}%`;
+
+    game.innerHTML = `
+        ${renderHUD()}
+        <div class="scene result-scene ${task.quality} fade-in">
+            <div class="result-icon">${icons[task.quality]}</div>
+            <div class="result-title">${qualityLabel}</div>
+            <div style="display: flex; gap: 25px; align-items: flex-end; margin-bottom: 15px;">
+                ${drawKurt(task.kurtExpr, 0.85)}
+                ${drawCarsten(task.carstenExpr, 0.85)}
+            </div>
+            <div class="result-text">${task.result}</div>
+            <div class="result-effect">${effectText}</div>
+            <button class="btn-next" onclick="nextRound()">Weiter</button>
+        </div>
+    `;
+}
+
+function nextRound() {
+    state.round++;
+
+    // Check lose
+    if (state.patience <= 0) {
+        renderLose();
+        return;
+    }
+
+    // Check win (perfect)
+    if (state.patience >= 100) {
+        renderWin();
+        return;
+    }
+
+    // Check rounds complete
+    if (state.round >= ROUNDS.length) {
+        if (state.patience > 50) {
+            renderSurviveGood();
+        } else {
+            renderSurviveBare();
+        }
+        return;
+    }
+
+    renderOffice();
+}
+
+function spawnConfetti(container) {
+    const colors = ['#FF4444', '#FFD700', '#4CAF50', '#2196F3', '#FF69B4', '#9C27B0', '#FF9800'];
+    for (let i = 0; i < 40; i++) {
+        const confetti = document.createElement('div');
+        confetti.className = 'confetti';
+        confetti.style.left = Math.random() * 100 + '%';
+        confetti.style.top = '-10px';
+        confetti.style.background = colors[Math.floor(Math.random() * colors.length)];
+        confetti.style.animationDelay = Math.random() * 2 + 's';
+        confetti.style.animationDuration = (2 + Math.random() * 2) + 's';
+        confetti.style.width = (6 + Math.random() * 10) + 'px';
+        confetti.style.height = (6 + Math.random() * 10) + 'px';
+        container.appendChild(confetti);
+    }
+}
+
+function renderWin() {
+    game.innerHTML = `
+        <div class="end-screen win fade-in" id="end-container" style="position: relative; overflow: hidden;">
+            <h1 class="comic-title">GESCHAFFT!</h1>
+            <div class="end-characters">
+                ${drawKurt('busy', 1)}
+                ${drawCarsten('happy', 1)}
+            </div>
+            <div class="end-text">
+                Carsten jubelt! Kurt ist endlich dauerhaft beschäftigt und Carsten kann in Ruhe seine Arbeit erledigen!
+                <br><br>
+                <strong>Endpunktzahl: ${state.score} Punkte</strong>
+            </div>
+            <button class="btn" onclick="resetGame()">NOCHMAL SPIELEN!</button>
+        </div>
+    `;
+    setTimeout(() => {
+        const c = document.getElementById('end-container');
+        if (c) spawnConfetti(c);
+    }, 300);
+}
+
+function renderSurviveGood() {
+    game.innerHTML = `
+        <div class="end-screen survive fade-in">
+            <h1 class="comic-title">ÜBERLEBT!</h1>
+            <div class="end-characters">
+                ${drawKurt('happy', 1)}
+                ${drawCarsten('relieved', 1)}
+            </div>
+            <div class="end-text">
+                Carsten hat den Tag überstanden! Kurt war zwar nicht immer beschäftigt, aber Carsten hat das Meiste erledigt bekommen.
+                <br><br>
+                <strong>Endpunktzahl: ${state.score} Punkte</strong>
+                <br>
+                Schaffst du es beim nächsten Mal, Carstens Geduld auf 100% zu bringen?
+            </div>
+            <button class="btn" onclick="resetGame()">NOCHMAL SPIELEN!</button>
+        </div>
+    `;
+}
+
+function renderSurviveBare() {
+    game.innerHTML = `
+        <div class="end-screen survive fade-in">
+            <h1 class="comic-title">KNAPP!</h1>
+            <div class="end-characters">
+                ${drawKurt('mischievous', 1)}
+                ${drawCarsten('frustrated', 1)}
+            </div>
+            <div class="end-text">
+                Carsten hat gerade so überlebt - aber er ist am Limit! Kurt war einfach zu oft eine Nervensäge.
+                <br><br>
+                <strong>Endpunktzahl: ${state.score} Punkte</strong>
+                <br>
+                Versuch es nochmal und finde bessere Aufgaben für Kurt!
+            </div>
+            <button class="btn" onclick="resetGame()">NOCHMAL SPIELEN!</button>
+        </div>
+    `;
+}
+
+function renderLose() {
+    game.innerHTML = `
+        <div class="end-screen lose fade-in">
+            <h1 class="comic-title">GAME OVER!</h1>
+            <div class="end-characters">
+                ${drawKurt('mischievous', 1)}
+                ${drawCarsten('crying', 1)}
+            </div>
+            <div class="end-text">
+                Carstens Geduld ist am Ende! Er packt seine Sachen und geht nach Hause.
+                Kurt steht verwirrt im Büro: "Was? Wo willst du hin? Ich wollte dir doch noch ein Video zeigen!"
+                <br><br>
+                <strong>Endpunktzahl: ${state.score} Punkte</strong>
+            </div>
+            <button class="btn" onclick="resetGame()">NOCHMAL VERSUCHEN!</button>
+        </div>
+    `;
+}
+
+// ===== GAME CONTROL =====
+
+function startGame() {
+    state = {
+        scene: 'office',
+        round: 0,
+        patience: 50,
+        score: 0,
+        history: []
+    };
+    renderOffice();
+}
+
+function resetGame() {
+    state = {
+        scene: 'title',
+        round: 0,
+        patience: 50,
+        score: 0,
+        history: []
+    };
+    renderTitle();
+}
+
+// ===== START =====
+renderTitle();
+</script>
+
+</body>
+</html>
