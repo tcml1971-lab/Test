@@ -234,7 +234,7 @@ class Planet:
 
         elif feat.kind == "glow":
             glow_r = max(feat.width, feat.height) // 2
-            pulse = 0.4 + 0.6 * math.sin(self._phase * 1.5 + x * 0.01)
+            pulse = max(0.0, 0.4 + 0.6 * math.sin(self._phase * 1.5 + x * 0.01))
             glow_surf = pygame.Surface((glow_r * 2, glow_r * 2), pygame.SRCALPHA)
             glow_col = (*feat.color, int(80 * pulse))
             pygame.draw.circle(glow_surf, glow_col, (glow_r, glow_r), glow_r)
