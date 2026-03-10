@@ -1,1444 +1,941 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Kurts Büro-Chaos</title>
-<link href="https://fonts.googleapis.com/css2?family=Bangers&family=Comic+Neue:wght@400;700&display=swap" rel="stylesheet">
-<style>
-* { margin: 0; padding: 0; box-sizing: border-box; }
-
-body {
-    background: #F0E68C;
-    background-image: radial-gradient(circle, #e0d67c 1px, transparent 1px);
-    background-size: 12px 12px;
-    min-height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-family: 'Comic Neue', 'Comic Sans MS', cursive;
-    overflow: hidden;
-}
-
-#game {
-    width: 900px;
-    max-width: 95vw;
-    min-height: 600px;
-    background: white;
-    border: 5px solid black;
-    border-radius: 12px;
-    box-shadow: 8px 8px 0 black;
-    position: relative;
-    overflow: hidden;
-}
-
-.comic-title {
-    font-family: 'Bangers', 'Impact', sans-serif;
-    letter-spacing: 2px;
-}
-
-/* ========== TITLE SCREEN ========== */
-.title-screen {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    min-height: 600px;
-    background: linear-gradient(135deg, #FFD700 0%, #FF69B4 50%, #87CEEB 100%);
-    padding: 40px;
-    text-align: center;
-}
-
-.title-screen h1 {
-    font-family: 'Bangers', 'Impact', sans-serif;
-    font-size: 4em;
-    color: white;
-    text-shadow: 4px 4px 0 black, -2px -2px 0 black, 2px -2px 0 black, -2px 2px 0 black;
-    margin-bottom: 10px;
-    transform: rotate(-3deg);
-    letter-spacing: 3px;
-}
-
-.title-screen .subtitle {
-    font-size: 1.3em;
-    font-weight: 700;
-    color: #333;
-    background: white;
-    border: 3px solid black;
-    border-radius: 20px;
-    padding: 10px 25px;
-    margin-bottom: 30px;
-    box-shadow: 3px 3px 0 black;
-}
-
-.title-characters {
-    display: flex;
-    gap: 40px;
-    margin-bottom: 30px;
-    align-items: flex-end;
-}
-
-.title-char-box {
-    background: white;
-    border: 3px solid black;
-    border-radius: 12px;
-    padding: 15px;
-    box-shadow: 3px 3px 0 black;
-    text-align: center;
-}
-
-.title-char-box .name {
-    font-family: 'Bangers', 'Impact', sans-serif;
-    font-size: 1.4em;
-    margin-top: 8px;
-    letter-spacing: 1px;
-}
-
-.title-char-box .role {
-    font-size: 0.85em;
-    color: #666;
-    font-weight: 700;
-}
-
-.btn {
-    font-family: 'Bangers', 'Impact', sans-serif;
-    font-size: 1.8em;
-    padding: 15px 50px;
-    background: #FF4444;
-    color: white;
-    border: 4px solid black;
-    border-radius: 12px;
-    cursor: pointer;
-    box-shadow: 4px 4px 0 black;
-    transition: all 0.1s;
-    letter-spacing: 2px;
-    text-shadow: 2px 2px 0 rgba(0,0,0,0.3);
-}
-
-.btn:hover {
-    transform: translate(2px, 2px);
-    box-shadow: 2px 2px 0 black;
-}
-
-.btn:active {
-    transform: translate(4px, 4px);
-    box-shadow: 0 0 0 black;
-}
-
-/* ========== GAME HUD ========== */
-.hud {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 12px 20px;
-    background: #333;
-    color: white;
-    border-bottom: 4px solid black;
-}
-
-.hud-round {
-    font-family: 'Bangers', 'Impact', sans-serif;
-    font-size: 1.3em;
-    letter-spacing: 1px;
-}
-
-.patience-bar-container {
-    flex: 1;
-    max-width: 350px;
-    margin: 0 20px;
-}
-
-.patience-label {
-    font-size: 0.8em;
-    font-weight: 700;
-    margin-bottom: 3px;
-    text-align: center;
-}
-
-.patience-bar-bg {
-    width: 100%;
-    height: 22px;
-    background: #555;
-    border-radius: 11px;
-    border: 2px solid black;
-    overflow: hidden;
-}
-
-.patience-bar-fill {
-    height: 100%;
-    border-radius: 9px;
-    transition: width 0.8s ease, background-color 0.8s ease;
-}
-
-.hud-score {
-    font-family: 'Bangers', 'Impact', sans-serif;
-    font-size: 1.3em;
-}
-
-/* ========== SCENE PANEL ========== */
-.scene {
-    position: relative;
-    min-height: 520px;
-    overflow: hidden;
-}
-
-/* ========== OFFICE SCENE ========== */
-.office-scene {
-    display: flex;
-    height: 520px;
-}
-
-.office-room {
-    flex: 1;
-    position: relative;
-    padding: 20px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: flex-end;
-}
-
-.office-room.kurt-office {
-    background: linear-gradient(180deg, #FFF8DC 0%, #FAEBD7 100%);
-}
-
-.office-room.carsten-office {
-    background: linear-gradient(180deg, #E8F5E9 0%, #C8E6C9 100%);
-    border-left: 4px solid black;
-}
-
-.room-label {
-    position: absolute;
-    top: 10px;
-    left: 50%;
-    transform: translateX(-50%);
-    font-family: 'Bangers', 'Impact', sans-serif;
-    font-size: 1.1em;
-    background: rgba(0,0,0,0.7);
-    color: white;
-    padding: 4px 16px;
-    border-radius: 8px;
-    letter-spacing: 1px;
-}
-
-.desk {
-    width: 200px;
-    height: 70px;
-    background: #8B5E3C;
-    border: 3px solid #5D3A1A;
-    border-radius: 6px;
-    position: absolute;
-    bottom: 30px;
-    box-shadow: 0 4px 0 #5D3A1A;
-}
-
-.desk-items {
-    position: absolute;
-    top: -15px;
-    left: 10px;
-    right: 10px;
-    display: flex;
-    gap: 8px;
-    justify-content: center;
-}
-
-.paper {
-    width: 16px;
-    height: 20px;
-    background: white;
-    border: 1.5px solid #999;
-    transform: rotate(var(--rot, 0deg));
-}
-
-.computer {
-    width: 40px;
-    height: 32px;
-    background: #333;
-    border: 2px solid black;
-    border-radius: 3px;
-    position: relative;
-}
-
-.computer::after {
-    content: '';
-    position: absolute;
-    bottom: -8px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 20px;
-    height: 6px;
-    background: #555;
-    border-radius: 0 0 3px 3px;
-}
-
-.computer-screen {
-    width: 34px;
-    height: 24px;
-    background: #4FC3F7;
-    margin: 2px auto;
-    border-radius: 1px;
-}
-
-.character-container {
-    position: absolute;
-    bottom: 95px;
-    z-index: 10;
-}
-
-/* ========== SPEECH BUBBLE ========== */
-.speech-bubble {
-    position: absolute;
-    background: white;
-    border: 3px solid black;
-    border-radius: 20px;
-    padding: 14px 18px;
-    font-size: 1em;
-    font-weight: 700;
-    max-width: 280px;
-    z-index: 20;
-    box-shadow: 3px 3px 0 rgba(0,0,0,0.2);
-    animation: popIn 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55);
-}
-
-.speech-bubble::after {
-    content: '';
-    position: absolute;
-    bottom: -18px;
-    left: 30px;
-    width: 0;
-    height: 0;
-    border-left: 12px solid transparent;
-    border-right: 12px solid transparent;
-    border-top: 18px solid black;
-}
-
-.speech-bubble::before {
-    content: '';
-    position: absolute;
-    bottom: -14px;
-    left: 32px;
-    width: 0;
-    height: 0;
-    border-left: 10px solid transparent;
-    border-right: 10px solid transparent;
-    border-top: 15px solid white;
-    z-index: 1;
-}
-
-@keyframes popIn {
-    0% { transform: scale(0); opacity: 0; }
-    100% { transform: scale(1); opacity: 1; }
-}
-
-/* ========== DISTURBANCE SCENE ========== */
-.disturbance-scene {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    min-height: 520px;
-    background: linear-gradient(180deg, #E8F5E9 0%, #C8E6C9 100%);
-    position: relative;
-    padding-top: 30px;
-}
-
-.disturbance-scene .scene-description {
-    font-family: 'Bangers', 'Impact', sans-serif;
-    font-size: 1.2em;
-    background: #FFD700;
-    border: 3px solid black;
-    padding: 10px 25px;
-    border-radius: 8px;
-    box-shadow: 3px 3px 0 black;
-    margin-bottom: 20px;
-    text-align: center;
-    max-width: 80%;
-    letter-spacing: 1px;
-}
-
-.characters-row {
-    display: flex;
-    gap: 30px;
-    align-items: flex-end;
-    margin-top: auto;
-    margin-bottom: 50px;
-    position: relative;
-}
-
-.action-word {
-    position: absolute;
-    font-family: 'Bangers', 'Impact', sans-serif;
-    font-size: 2.5em;
-    color: #FF4444;
-    text-shadow: 3px 3px 0 black;
-    transform: rotate(-15deg);
-    animation: shake 0.5s infinite;
-    z-index: 30;
-    top: -20px;
-    right: -30px;
-}
-
-@keyframes shake {
-    0%, 100% { transform: rotate(-15deg) scale(1); }
-    25% { transform: rotate(-12deg) scale(1.05); }
-    75% { transform: rotate(-18deg) scale(0.95); }
-}
-
-/* ========== CHOICE PANEL ========== */
-.choice-panel {
-    display: flex;
-    flex-direction: column;
-    min-height: 520px;
-    background: linear-gradient(180deg, #FFF3E0 0%, #FFE0B2 100%);
-    padding: 25px;
-}
-
-.choice-header {
-    font-family: 'Bangers', 'Impact', sans-serif;
-    font-size: 1.5em;
-    text-align: center;
-    margin-bottom: 8px;
-    color: #E65100;
-    letter-spacing: 1px;
-}
-
-.choice-instruction {
-    text-align: center;
-    font-weight: 700;
-    margin-bottom: 20px;
-    font-size: 1.05em;
-    color: #555;
-}
-
-.choices-container {
-    display: flex;
-    flex-direction: column;
-    gap: 14px;
-    max-width: 700px;
-    margin: 0 auto;
-    width: 100%;
-}
-
-.choice-btn {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    padding: 16px 22px;
-    background: white;
-    border: 3px solid black;
-    border-radius: 12px;
-    cursor: pointer;
-    font-family: 'Comic Neue', 'Comic Sans MS', cursive;
-    font-size: 1.05em;
-    font-weight: 700;
-    text-align: left;
-    transition: all 0.15s;
-    box-shadow: 3px 3px 0 black;
-}
-
-.choice-btn:hover {
-    transform: translate(1px, 1px);
-    box-shadow: 2px 2px 0 black;
-    background: #FFF9C4;
-}
-
-.choice-btn:active {
-    transform: translate(3px, 3px);
-    box-shadow: 0 0 0 black;
-}
-
-.choice-number {
-    font-family: 'Bangers', 'Impact', sans-serif;
-    font-size: 1.8em;
-    width: 45px;
-    height: 45px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 50%;
-    border: 3px solid black;
-    flex-shrink: 0;
-    color: white;
-    text-shadow: 1px 1px 0 rgba(0,0,0,0.3);
-}
-
-.choice-preview {
-    display: flex;
-    justify-content: center;
-    margin-top: 20px;
-}
-
-/* ========== RESULT SCENE ========== */
-.result-scene {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    min-height: 520px;
-    padding: 30px;
-    text-align: center;
-}
-
-.result-scene.good { background: linear-gradient(180deg, #E8F5E9 0%, #A5D6A7 100%); }
-.result-scene.medium { background: linear-gradient(180deg, #FFF8E1 0%, #FFD54F 100%); }
-.result-scene.bad { background: linear-gradient(180deg, #FFEBEE 0%, #EF9A9A 100%); }
-
-.result-icon {
-    font-size: 4em;
-    margin-bottom: 15px;
-    animation: popIn 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55);
-}
-
-.result-title {
-    font-family: 'Bangers', 'Impact', sans-serif;
-    font-size: 2.2em;
-    margin-bottom: 15px;
-    letter-spacing: 2px;
-}
-
-.result-scene.good .result-title { color: #2E7D32; }
-.result-scene.medium .result-title { color: #F57F17; }
-.result-scene.bad .result-title { color: #C62828; }
-
-.result-text {
-    font-size: 1.15em;
-    font-weight: 700;
-    max-width: 550px;
-    line-height: 1.5;
-    margin-bottom: 10px;
-    color: #333;
-}
-
-.result-effect {
-    font-family: 'Bangers', 'Impact', sans-serif;
-    font-size: 1.1em;
-    margin-top: 10px;
-    padding: 8px 20px;
-    border-radius: 8px;
-    border: 2px solid black;
-}
-
-.result-scene.good .result-effect { background: #C8E6C9; color: #1B5E20; }
-.result-scene.medium .result-effect { background: #FFF9C4; color: #F57F17; }
-.result-scene.bad .result-effect { background: #FFCDD2; color: #B71C1C; }
-
-.btn-next {
-    font-family: 'Bangers', 'Impact', sans-serif;
-    font-size: 1.4em;
-    padding: 12px 40px;
-    background: #333;
-    color: white;
-    border: 3px solid black;
-    border-radius: 10px;
-    cursor: pointer;
-    box-shadow: 3px 3px 0 black;
-    margin-top: 25px;
-    letter-spacing: 1px;
-    transition: all 0.1s;
-}
-
-.btn-next:hover {
-    transform: translate(2px, 2px);
-    box-shadow: 1px 1px 0 black;
-}
-
-/* ========== END SCREENS ========== */
-.end-screen {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    min-height: 600px;
-    padding: 40px;
-    text-align: center;
-}
-
-.end-screen.win {
-    background: linear-gradient(135deg, #A5D6A7 0%, #66BB6A 50%, #43A047 100%);
-}
-
-.end-screen.survive {
-    background: linear-gradient(135deg, #FFF9C4 0%, #FFD54F 50%, #FFB300 100%);
-}
-
-.end-screen.lose {
-    background: linear-gradient(135deg, #FFCDD2 0%, #EF5350 50%, #C62828 100%);
-}
-
-.end-screen h1 {
-    font-family: 'Bangers', 'Impact', sans-serif;
-    font-size: 3em;
-    color: white;
-    text-shadow: 3px 3px 0 black;
-    margin-bottom: 20px;
-    letter-spacing: 2px;
-}
-
-.end-screen .end-text {
-    font-size: 1.3em;
-    font-weight: 700;
-    color: #333;
-    background: rgba(255,255,255,0.85);
-    border: 3px solid black;
-    border-radius: 15px;
-    padding: 20px 30px;
-    max-width: 500px;
-    margin-bottom: 30px;
-    line-height: 1.5;
-    box-shadow: 3px 3px 0 rgba(0,0,0,0.2);
-}
-
-.end-characters {
-    display: flex;
-    gap: 30px;
-    margin-bottom: 25px;
-    align-items: flex-end;
-}
-
-.confetti {
-    position: absolute;
-    width: 10px;
-    height: 10px;
-    border-radius: 2px;
-    animation: confettiFall 3s ease-in forwards;
-}
-
-@keyframes confettiFall {
-    0% { transform: translateY(-100px) rotate(0deg); opacity: 1; }
-    100% { transform: translateY(600px) rotate(720deg); opacity: 0; }
-}
-
-/* ========== ANIMATIONS ========== */
-.fade-in {
-    animation: fadeIn 0.5s ease;
-}
-
-@keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-}
-
-.slide-in-left {
-    animation: slideInLeft 0.6s ease;
-}
-
-@keyframes slideInLeft {
-    from { transform: translateX(-100%); opacity: 0; }
-    to { transform: translateX(0); opacity: 1; }
-}
-
-.slide-in-right {
-    animation: slideInRight 0.6s ease;
-}
-
-@keyframes slideInRight {
-    from { transform: translateX(100%); opacity: 0; }
-    to { transform: translateX(0); opacity: 1; }
-}
-
-.bounce {
-    animation: bounce 0.6s ease;
-}
-
-@keyframes bounce {
-    0% { transform: scale(0.3); }
-    50% { transform: scale(1.1); }
-    70% { transform: scale(0.9); }
-    100% { transform: scale(1); }
-}
-
-.swivel {
-    animation: swivel 2s ease-in-out infinite;
-}
-
-@keyframes swivel {
-    0%, 100% { transform: rotate(-5deg); }
-    50% { transform: rotate(5deg); }
-}
-
-.work-typing {
-    animation: typing 0.8s steps(3) infinite;
-}
-
-@keyframes typing {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-3px); }
-}
-
-/* ========== RESPONSIVE ========== */
-@media (max-width: 700px) {
-    .title-screen h1 { font-size: 2.5em; }
-    .choice-btn { font-size: 0.95em; padding: 12px 16px; }
-    .result-title { font-size: 1.6em; }
-    .title-characters { flex-direction: column; gap: 15px; align-items: center; }
-}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>Mops Rettung!</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #111;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      overflow: hidden;
+      touch-action: none;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    #gameCanvas {
+      display: block;
+      touch-action: none;
+    }
+  </style>
 </head>
 <body>
-
-<div id="game"></div>
-
+<canvas id="gameCanvas"></canvas>
 <script>
-// ===== SVG CHARACTER FUNCTIONS =====
+// ================================================
+//   MOPS RETTUNG! – Ein Game & Wuff Klassiker
+//   Inspiriert von Nintendo Game & Watch "Fire"
+// ================================================
 
-function drawKurt(expression = 'neutral', scale = 1) {
-    const w = 120 * scale;
-    const h = 180 * scale;
+const canvas = document.getElementById('gameCanvas');
+const ctx    = canvas.getContext('2d');
 
-    let eyebrowL, eyebrowR, mouth, extras = '';
+// ----- Layout & Constants -----
+const W = 360, H = 640;
 
-    switch (expression) {
-        case 'bored':
-            eyebrowL = `<line x1="37" y1="52" x2="48" y2="50" stroke="#333" stroke-width="2.5" stroke-linecap="round"/>`;
-            eyebrowR = `<line x1="72" y1="50" x2="83" y2="52" stroke="#333" stroke-width="2.5" stroke-linecap="round"/>`;
-            mouth = `<path d="M 50 80 Q 60 76 70 80" stroke="#333" stroke-width="2" fill="none"/>`;
-            break;
-        case 'happy':
-            eyebrowL = `<line x1="37" y1="48" x2="48" y2="50" stroke="#333" stroke-width="2.5" stroke-linecap="round"/>`;
-            eyebrowR = `<line x1="72" y1="50" x2="83" y2="48" stroke="#333" stroke-width="2.5" stroke-linecap="round"/>`;
-            mouth = `<path d="M 48 77 Q 60 88 72 77" stroke="#333" stroke-width="2.5" fill="none"/>`;
-            break;
-        case 'mischievous':
-            eyebrowL = `<line x1="37" y1="46" x2="48" y2="50" stroke="#333" stroke-width="2.5" stroke-linecap="round"/>`;
-            eyebrowR = `<line x1="72" y1="50" x2="83" y2="46" stroke="#333" stroke-width="2.5" stroke-linecap="round"/>`;
-            mouth = `<path d="M 50 78 Q 60 86 72 76" stroke="#333" stroke-width="2.5" fill="none"/>`;
-            break;
-        case 'busy':
-            eyebrowL = `<line x1="37" y1="49" x2="48" y2="47" stroke="#333" stroke-width="2.5" stroke-linecap="round"/>`;
-            eyebrowR = `<line x1="72" y1="47" x2="83" y2="49" stroke="#333" stroke-width="2.5" stroke-linecap="round"/>`;
-            mouth = `<ellipse cx="60" cy="80" rx="6" ry="4" fill="#333"/>`;
-            break;
-        case 'chaos':
-            eyebrowL = `<line x1="37" y1="46" x2="48" y2="51" stroke="#333" stroke-width="2.5" stroke-linecap="round"/>`;
-            eyebrowR = `<line x1="72" y1="51" x2="83" y2="46" stroke="#333" stroke-width="2.5" stroke-linecap="round"/>`;
-            mouth = `<path d="M 48 78 Q 55 85 60 77 Q 65 85 72 78" stroke="#333" stroke-width="2.5" fill="none"/>`;
-            extras = `<text x="15" y="25" font-family="Bangers, Impact, sans-serif" font-size="14" fill="#FF4444" transform="rotate(-20, 15, 25)">!!!</text>`;
-            break;
-        default: // neutral
-            eyebrowL = `<line x1="37" y1="50" x2="48" y2="50" stroke="#333" stroke-width="2.5" stroke-linecap="round"/>`;
-            eyebrowR = `<line x1="72" y1="50" x2="83" y2="50" stroke="#333" stroke-width="2.5" stroke-linecap="round"/>`;
-            mouth = `<path d="M 50 78 Q 60 82 70 78" stroke="#333" stroke-width="2" fill="none"/>`;
-    }
+const GROUND_Y       = 535;
+const TRAMP_Y        = 512;
+const TRAMP_W        = 124;
+const TRAMP_H        = 18;
+const TRAMP_MIN_X    = 22;
+const TRAMP_MAX_X    = W - 22 - TRAMP_W;   // 214
+const TRAMP_SPEED    = 5.5;
 
-    return `<svg viewBox="0 0 120 180" width="${w}" height="${h}" xmlns="http://www.w3.org/2000/svg">
-        <!-- Body - Pink Polo -->
-        <rect x="30" y="100" width="60" height="65" rx="8" fill="#FF69B4" stroke="black" stroke-width="2.5"/>
-        <!-- Polo collar (popped up!) -->
-        <polygon points="38,100 48,90 55,100" fill="#FF69B4" stroke="black" stroke-width="2"/>
-        <polygon points="82,100 72,90 65,100" fill="#FF69B4" stroke="black" stroke-width="2"/>
-        <!-- Collar fold highlight -->
-        <line x1="43" y1="96" x2="50" y2="93" stroke="#FF1493" stroke-width="1.5"/>
-        <line x1="77" y1="96" x2="70" y2="93" stroke="#FF1493" stroke-width="1.5"/>
-        <!-- Polo buttons -->
-        <circle cx="60" cy="110" r="2" fill="white" stroke="black" stroke-width="1"/>
-        <circle cx="60" cy="118" r="2" fill="white" stroke="black" stroke-width="1"/>
-        <!-- Arms -->
-        <rect x="12" y="103" width="20" height="45" rx="10" fill="#F5D0A9" stroke="black" stroke-width="2.5"/>
-        <rect x="88" y="103" width="20" height="45" rx="10" fill="#F5D0A9" stroke="black" stroke-width="2.5"/>
-        <!-- Neck -->
-        <rect x="50" y="88" width="20" height="16" rx="4" fill="#F5D0A9" stroke="black" stroke-width="2"/>
-        <!-- Head (bald!) -->
-        <ellipse cx="60" cy="50" rx="30" ry="33" fill="#F5D0A9" stroke="black" stroke-width="2.5"/>
-        <!-- Bald head shine -->
-        <ellipse cx="50" cy="28" rx="12" ry="6" fill="rgba(255,255,255,0.3)" transform="rotate(-15,50,28)"/>
-        <!-- Stubble -->
-        <ellipse cx="60" cy="78" rx="18" ry="10" fill="rgba(120,120,120,0.15)"/>
-        <circle cx="48" cy="74" r="0.8" fill="#999"/>
-        <circle cx="52" cy="76" r="0.8" fill="#999"/>
-        <circle cx="56" cy="78" r="0.8" fill="#999"/>
-        <circle cx="60" cy="79" r="0.8" fill="#999"/>
-        <circle cx="64" cy="78" r="0.8" fill="#999"/>
-        <circle cx="68" cy="76" r="0.8" fill="#999"/>
-        <circle cx="72" cy="74" r="0.8" fill="#999"/>
-        <circle cx="50" cy="79" r="0.8" fill="#999"/>
-        <circle cx="54" cy="81" r="0.8" fill="#999"/>
-        <circle cx="58" cy="82" r="0.8" fill="#999"/>
-        <circle cx="62" cy="82" r="0.8" fill="#999"/>
-        <circle cx="66" cy="81" r="0.8" fill="#999"/>
-        <circle cx="70" cy="79" r="0.8" fill="#999"/>
-        <!-- Ears -->
-        <ellipse cx="30" cy="55" rx="6" ry="8" fill="#F5D0A9" stroke="black" stroke-width="2"/>
-        <ellipse cx="90" cy="55" rx="6" ry="8" fill="#F5D0A9" stroke="black" stroke-width="2"/>
-        <!-- Eyes -->
-        <ellipse cx="47" cy="55" rx="6" ry="7" fill="white" stroke="black" stroke-width="2"/>
-        <ellipse cx="73" cy="55" rx="6" ry="7" fill="white" stroke="black" stroke-width="2"/>
-        <circle cx="48" cy="56" r="3" fill="#4A3728"/>
-        <circle cx="74" cy="56" r="3" fill="#4A3728"/>
-        <circle cx="49" cy="55" r="1" fill="white"/>
-        <circle cx="75" cy="55" r="1" fill="white"/>
-        <!-- Eyebrows -->
-        ${eyebrowL}
-        ${eyebrowR}
-        <!-- Nose -->
-        <path d="M 58 60 Q 60 68 62 60" stroke="#D4A574" stroke-width="2" fill="none"/>
-        <!-- Mouth -->
-        ${mouth}
-        ${extras}
-    </svg>`;
+const BUILDING_X     = 222;
+const BUILDING_Y     = 75;
+const BUILDING_W     = 138;
+const BUILDING_H     = 440;
+
+const AMBULANCE_X    = 4;
+const AMBULANCE_Y    = 452;
+const AMBULANCE_W    = 102;
+const AMBULANCE_H    = 68;
+
+// Window positions (spawn points for pugs)
+const WINDOWS = [];
+for (let row = 0; row < 4; row++) {
+  for (let col = 0; col < 3; col++) {
+    WINDOWS.push({
+      x: BUILDING_X + 14 + col * 38,
+      y: BUILDING_Y + 28 + row * 68,
+    });
+  }
 }
 
-function drawCarsten(expression = 'neutral', scale = 1) {
-    const w = 120 * scale;
-    const h = 200 * scale;
+// ----- Audio (Web Audio API) -----
+let audioCtx = null;
+function getAudio() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  return audioCtx;
+}
+function playTone(freq, type, duration, gain = 0.3) {
+  try {
+    const ac  = getAudio();
+    const osc = ac.createOscillator();
+    const gn  = ac.createGain();
+    osc.connect(gn); gn.connect(ac.destination);
+    osc.type = type;
+    osc.frequency.setValueAtTime(freq, ac.currentTime);
+    gn.gain.setValueAtTime(gain, ac.currentTime);
+    gn.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + duration);
+    osc.start(); osc.stop(ac.currentTime + duration);
+  } catch(e) {}
+}
+function sfxBounce()  { playTone(320,'sine',0.12,0.25); playTone(480,'sine',0.08,0.15); }
+function sfxSave()    { [600,800,1000].forEach((f,i) => setTimeout(() => playTone(f,'sine',0.15,0.2), i*60)); }
+function sfxMiss()    { playTone(120,'sawtooth',0.3,0.35); }
+function sfxLevelUp() { [400,500,600,800].forEach((f,i) => setTimeout(() => playTone(f,'square',0.12,0.18), i*80)); }
+function sfxStart()   { [300,400,500,700].forEach((f,i) => setTimeout(() => playTone(f,'sine',0.18,0.22), i*70)); }
 
-    let eyebrowL, eyebrowR, mouth, extras = '';
-
-    switch (expression) {
-        case 'working':
-            eyebrowL = `<line x1="37" y1="42" x2="48" y2="42" stroke="#333" stroke-width="2.5" stroke-linecap="round"/>`;
-            eyebrowR = `<line x1="72" y1="42" x2="83" y2="42" stroke="#333" stroke-width="2.5" stroke-linecap="round"/>`;
-            mouth = `<path d="M 50 75 Q 60 78 70 75" stroke="#333" stroke-width="2" fill="none"/>`;
-            break;
-        case 'frustrated':
-            eyebrowL = `<line x1="37" y1="38" x2="48" y2="43" stroke="#333" stroke-width="2.5" stroke-linecap="round"/>`;
-            eyebrowR = `<line x1="72" y1="43" x2="83" y2="38" stroke="#333" stroke-width="2.5" stroke-linecap="round"/>`;
-            mouth = `<path d="M 50 78 Q 60 72 70 78" stroke="#333" stroke-width="2.5" fill="none"/>`;
-            extras = `<text x="95" y="20" font-family="Bangers, Impact, sans-serif" font-size="16" fill="#FF4444">!</text>`;
-            break;
-        case 'desperate':
-            eyebrowL = `<line x1="40" y1="36" x2="48" y2="42" stroke="#333" stroke-width="2.5" stroke-linecap="round"/>`;
-            eyebrowR = `<line x1="72" y1="42" x2="80" y2="36" stroke="#333" stroke-width="2.5" stroke-linecap="round"/>`;
-            mouth = `<ellipse cx="60" cy="77" rx="8" ry="5" fill="#333"/>`;
-            extras = `
-                <!-- Sweat drop -->
-                <path d="M 92 35 Q 95 28 98 35 Q 95 40 92 35" fill="#87CEEB" stroke="#333" stroke-width="1"/>
-            `;
-            break;
-        case 'relieved':
-            eyebrowL = `<line x1="37" y1="41" x2="48" y2="42" stroke="#333" stroke-width="2.5" stroke-linecap="round"/>`;
-            eyebrowR = `<line x1="72" y1="42" x2="83" y2="41" stroke="#333" stroke-width="2.5" stroke-linecap="round"/>`;
-            mouth = `<path d="M 48 74 Q 60 84 72 74" stroke="#333" stroke-width="2.5" fill="none"/>`;
-            extras = `<text x="88" y="25" font-family="serif" font-size="14" fill="#4CAF50">♪</text>`;
-            break;
-        case 'happy':
-            eyebrowL = `<line x1="37" y1="39" x2="48" y2="41" stroke="#333" stroke-width="2.5" stroke-linecap="round"/>`;
-            eyebrowR = `<line x1="72" y1="41" x2="83" y2="39" stroke="#333" stroke-width="2.5" stroke-linecap="round"/>`;
-            mouth = `<path d="M 46 73 Q 60 90 74 73" stroke="#333" stroke-width="2.5" fill="none"/>`;
-            break;
-        case 'crying':
-            eyebrowL = `<line x1="40" y1="36" x2="48" y2="43" stroke="#333" stroke-width="2.5" stroke-linecap="round"/>`;
-            eyebrowR = `<line x1="72" y1="43" x2="80" y2="36" stroke="#333" stroke-width="2.5" stroke-linecap="round"/>`;
-            mouth = `<path d="M 50 80 Q 60 72 70 80" stroke="#333" stroke-width="2.5" fill="none"/>`;
-            extras = `
-                <line x1="45" y1="56" x2="43" y2="68" stroke="#87CEEB" stroke-width="2" stroke-linecap="round"/>
-                <line x1="75" y1="56" x2="77" y2="68" stroke="#87CEEB" stroke-width="2" stroke-linecap="round"/>
-            `;
-            break;
-        default: // neutral
-            eyebrowL = `<line x1="37" y1="42" x2="48" y2="42" stroke="#333" stroke-width="2.5" stroke-linecap="round"/>`;
-            eyebrowR = `<line x1="72" y1="42" x2="83" y2="42" stroke="#333" stroke-width="2.5" stroke-linecap="round"/>`;
-            mouth = `<path d="M 50 75 Q 60 79 70 75" stroke="#333" stroke-width="2" fill="none"/>`;
-    }
-
-    return `<svg viewBox="0 0 120 200" width="${w}" height="${h}" xmlns="http://www.w3.org/2000/svg">
-        <!-- Body - T-Shirt -->
-        <rect x="28" y="98" width="64" height="75" rx="8" fill="#4A90D9" stroke="black" stroke-width="2.5"/>
-        <!-- T-shirt neckline -->
-        <path d="M 45 98 Q 60 108 75 98" stroke="black" stroke-width="2" fill="#4A90D9"/>
-        <!-- T-shirt sleeve lines -->
-        <line x1="28" y1="118" x2="38" y2="115" stroke="#3A7BC8" stroke-width="1.5"/>
-        <line x1="92" y1="118" x2="82" y2="115" stroke="#3A7BC8" stroke-width="1.5"/>
-        <!-- Arms -->
-        <rect x="10" y="101" width="20" height="50" rx="10" fill="#F5D0A9" stroke="black" stroke-width="2.5"/>
-        <rect x="90" y="101" width="20" height="50" rx="10" fill="#F5D0A9" stroke="black" stroke-width="2.5"/>
-        <!-- Neck -->
-        <rect x="48" y="85" width="24" height="18" rx="5" fill="#F5D0A9" stroke="black" stroke-width="2"/>
-        <!-- Head -->
-        <ellipse cx="60" cy="47" rx="30" ry="33" fill="#F5D0A9" stroke="black" stroke-width="2.5"/>
-        <!-- Hair (short, parted) -->
-        <path d="M 30 38 Q 32 12 60 10 Q 88 12 90 38 L 90 33 Q 88 8 60 6 Q 32 8 30 33 Z" fill="#6D4C2F" stroke="black" stroke-width="2"/>
-        <!-- Part line -->
-        <line x1="52" y1="8" x2="48" y2="22" stroke="#5A3E25" stroke-width="1.5"/>
-        <!-- Full beard -->
-        <path d="M 35 58 Q 33 68 38 80 Q 45 90 60 92 Q 75 90 82 80 Q 87 68 85 58 L 85 60 Q 83 72 78 80 Q 70 87 60 88 Q 50 87 42 80 Q 37 72 35 60 Z" fill="#6D4C2F" stroke="black" stroke-width="2"/>
-        <!-- Beard texture -->
-        <path d="M 42 65 Q 45 70 42 75" stroke="#5A3E25" stroke-width="1" fill="none"/>
-        <path d="M 55 70 Q 58 76 55 82" stroke="#5A3E25" stroke-width="1" fill="none"/>
-        <path d="M 68 70 Q 65 76 68 82" stroke="#5A3E25" stroke-width="1" fill="none"/>
-        <path d="M 78 65 Q 75 70 78 75" stroke="#5A3E25" stroke-width="1" fill="none"/>
-        <!-- Ears -->
-        <ellipse cx="30" cy="52" rx="5" ry="8" fill="#F5D0A9" stroke="black" stroke-width="2"/>
-        <ellipse cx="90" cy="52" rx="5" ry="8" fill="#F5D0A9" stroke="black" stroke-width="2"/>
-        <!-- Eyes -->
-        <ellipse cx="47" cy="48" rx="6" ry="7" fill="white" stroke="black" stroke-width="2"/>
-        <ellipse cx="73" cy="48" rx="6" ry="7" fill="white" stroke="black" stroke-width="2"/>
-        <circle cx="48" cy="49" r="3" fill="#4A6741"/>
-        <circle cx="74" cy="49" r="3" fill="#4A6741"/>
-        <circle cx="49" cy="48" r="1" fill="white"/>
-        <circle cx="75" cy="48" r="1" fill="white"/>
-        <!-- Eyebrows -->
-        ${eyebrowL}
-        ${eyebrowR}
-        <!-- Nose -->
-        <path d="M 57 53 Q 60 62 63 53" stroke="#D4A574" stroke-width="2" fill="none"/>
-        <!-- Mouth (visible through beard area) -->
-        ${mouth}
-        ${extras}
-    </svg>`;
+// ----- roundRect polyfill -----
+if (!CanvasRenderingContext2D.prototype.roundRect) {
+  CanvasRenderingContext2D.prototype.roundRect = function(x, y, w, h, r) {
+    r = Math.min(r, w/2, h/2);
+    this.beginPath();
+    this.moveTo(x+r, y);
+    this.lineTo(x+w-r, y);
+    this.quadraticCurveTo(x+w, y, x+w, y+r);
+    this.lineTo(x+w, y+h-r);
+    this.quadraticCurveTo(x+w, y+h, x+w-r, y+h);
+    this.lineTo(x+r, y+h);
+    this.quadraticCurveTo(x, y+h, x, y+h-r);
+    this.lineTo(x, y+r);
+    this.quadraticCurveTo(x, y, x+r, y);
+    this.closePath();
+    return this;
+  };
 }
 
-// ===== GAME DATA =====
+// ----- Canvas resize -----
+function resize() {
+  const s = Math.min(window.innerWidth / W, window.innerHeight / H);
+  canvas.width  = W;
+  canvas.height = H;
+  canvas.style.width  = Math.floor(W * s) + 'px';
+  canvas.style.height = Math.floor(H * s) + 'px';
+}
+window.addEventListener('resize', resize);
+resize();
 
-const ROUNDS = [
-    {
-        disturbance: {
-            narration: "Kurt schlendert gelangweilt in Carstens Büro...",
-            speech: "Na, Carsten? Arbeitest du etwa? Das sieht ja anstrengend aus!",
-            kurtExpr: 'mischievous',
-            carstenExpr: 'frustrated'
-        },
-        tasks: [
-            {
-                text: "Sortiere alle Büroklammern nach Größe UND Farbe!",
-                quality: 'good',
-                result: "Kurt vertieft sich total in die Büroklammern-Sortierung. Er legt kleine Häufchen auf seinem Schreibtisch an und murmelt zufrieden vor sich hin.",
-                kurtExpr: 'busy',
-                carstenExpr: 'relieved'
-            },
-            {
-                text: "Hol dir doch einen Kaffee aus der Küche!",
-                quality: 'medium',
-                result: "Kurt geht Kaffee holen... ist aber nach 3 Minuten schon wieder da. 'Carsten, willst du auch einen? Nein? Na gut... was machst du gerade?'",
-                kurtExpr: 'happy',
-                carstenExpr: 'frustrated'
-            },
-            {
-                text: "Schreib die Elternbriefe für die Klassenfahrt!",
-                quality: 'bad',
-                result: "Kurt schreibt wirre Elternbriefe voller Rechtschreibfehler und falscher Daten. 15 besorgte Eltern rufen an. Carsten muss ALLES korrigieren!",
-                kurtExpr: 'chaos',
-                carstenExpr: 'desperate'
-            }
-        ]
-    },
-    {
-        disturbance: {
-            narration: "Kurt stürmt mit seinem Handy herein...",
-            speech: "CARSTEN! Guck mal! Ein Hund auf einem Skateboard! Hahaha! Warte, ich spul nochmal zurück!",
-            kurtExpr: 'happy',
-            carstenExpr: 'frustrated'
-        },
-        tasks: [
-            {
-                text: "Erstelle eine Inventarliste aller Kugelschreiber in der Schule!",
-                quality: 'good',
-                result: "Kurt zählt hingebungsvoll Kugelschreiber in jedem einzelnen Klassenzimmer. Er erstellt sogar eine Excel-Tabelle nach Farben sortiert!",
-                kurtExpr: 'busy',
-                carstenExpr: 'relieved'
-            },
-            {
-                text: "Schau dir das Video nochmal in Ruhe an deinem Schreibtisch an!",
-                quality: 'medium',
-                result: "Kurt guckt Videos an seinem Platz... aber kommt nach 5 Minuten zurück: 'Du MUSST dir diese Stelle ansehen! Der Hund macht einen Kickflip!'",
-                kurtExpr: 'happy',
-                carstenExpr: 'frustrated'
-            },
-            {
-                text: "Gestalte die Schulhomepage mal neu!",
-                quality: 'bad',
-                result: "Kurt macht die komplette Homepage pink mit Comic Sans und animierten GIFs von tanzenden Bananen. Die Elternvertretung ist entsetzt!",
-                kurtExpr: 'chaos',
-                carstenExpr: 'desperate'
-            }
-        ]
-    },
-    {
-        disturbance: {
-            narration: "Kurt trommelt rhythmisch auf Carstens Schreibtisch...",
-            speech: "Mir ist SOOO langweilig! Wollen wir nicht was zusammen machen? Tischtennis im Lehrerzimmer?",
-            kurtExpr: 'bored',
-            carstenExpr: 'desperate'
-        },
-        tasks: [
-            {
-                text: "Das Lehrerzimmer braucht dringend eine Grundreinigung!",
-                quality: 'good',
-                result: "Kurt putzt mit Feuereifer das komplette Lehrerzimmer - sortiert Tassen, wischt Tische, ordnet Fächer. Endlich herrscht Ruhe!",
-                kurtExpr: 'busy',
-                carstenExpr: 'relieved'
-            },
-            {
-                text: "Mach doch ein paar Dehnübungen an deinem Schreibtisch!",
-                quality: 'medium',
-                result: "Kurt dehnt sich 2 Minuten... dann kommt er zurück: 'Carsten, guck mal wie weit ich mich bücken kann! Ich bin total beweglich!'",
-                kurtExpr: 'happy',
-                carstenExpr: 'frustrated'
-            },
-            {
-                text: "Halte eine spontane Motivationsrede über die Sprechanlage!",
-                quality: 'bad',
-                result: "Kurt hält eine 20-minütige wirre Rede über 'Teamgeist und Synergien'. Die ganze Schule ist genervt. Es hagelt Beschwerden bei Carsten!",
-                kurtExpr: 'chaos',
-                carstenExpr: 'desperate'
-            }
-        ]
-    },
-    {
-        disturbance: {
-            narration: "Kurt schiebt seinen Bürostuhl ins Nebenzimmer...",
-            speech: "Dein Büro ist viel gemütlicher als meins! Ich glaube, wir sollten die Möbel umstellen. Was meinst du?",
-            kurtExpr: 'mischievous',
-            carstenExpr: 'frustrated'
-        },
-        tasks: [
-            {
-                text: "Spitze ALLE Bleistifte im gesamten Schulgebäude an!",
-                quality: 'good',
-                result: "Kurt wandert von Klassenraum zu Klassenraum und spitzt gewissenhaft jeden Bleistift an. Er nimmt die Aufgabe sehr ernst!",
-                kurtExpr: 'busy',
-                carstenExpr: 'relieved'
-            },
-            {
-                text: "Falte ein paar Papierflugzeuge!",
-                quality: 'medium',
-                result: "Kurt faltet begeistert 3 Flieger... und wirft sie dann in Carstens Büro. 'Der war gut, oder? Guck mal, DER fliegt noch weiter!'",
-                kurtExpr: 'happy',
-                carstenExpr: 'frustrated'
-            },
-            {
-                text: "Erstelle den neuen Stundenplan für nächste Woche!",
-                quality: 'bad',
-                result: "Kurt erstellt einen Stundenplan mit 3x Sport am Tag, Mathe nur freitags um 16 Uhr und einer 'Mittagsschlaf-Stunde'. Totales Chaos!",
-                kurtExpr: 'chaos',
-                carstenExpr: 'desperate'
-            }
-        ]
-    },
-    {
-        disturbance: {
-            narration: "Kurt singt laut vor sich hin und kommt rüber...",
-            speech: "LALALA... 🎵 Oh, störe ich? Naja, egal - Carsten, kennst du dieses Lied? Warte, ich sing's nochmal!",
-            kurtExpr: 'happy',
-            carstenExpr: 'desperate'
-        },
-        tasks: [
-            {
-                text: "Archiviere die alten Akten im Keller - die letzten 10 Jahre!",
-                quality: 'good',
-                result: "Kurt verschwindet im Keller und sortiert hingebungsvoll alte Akten. Stundenlange Beschäftigung garantiert! Carsten atmet tief durch.",
-                kurtExpr: 'busy',
-                carstenExpr: 'relieved'
-            },
-            {
-                text: "Löse das Kreuzworträtsel in der Zeitung!",
-                quality: 'medium',
-                result: "Kurt löst es in 5 Minuten und kommt sofort zu Carsten: 'Was ist ein Fluss mit 4 Buchstaben? Egal, ich hab's! Rate mal - 17 waagerecht!'",
-                kurtExpr: 'happy',
-                carstenExpr: 'frustrated'
-            },
-            {
-                text: "Organisiere spontan einen Projekttag für morgen!",
-                quality: 'bad',
-                result: "Kurt kündigt über die Sprechanlage einen Projekttag an - ohne Plan, ohne Material, ohne Information ans Kollegium. Panik bricht aus!",
-                kurtExpr: 'chaos',
-                carstenExpr: 'desperate'
-            }
-        ]
-    },
-    {
-        disturbance: {
-            narration: "Kurt kommt mit einer Kaffeetasse und setzt sich auf Carstens Schreibtisch...",
-            speech: "Weißt du was, Carsten? Ich glaube, ich brauche ein Hobby. Was machst DU so in deiner Freizeit? Erzähl mal!",
-            kurtExpr: 'bored',
-            carstenExpr: 'desperate'
-        },
-        tasks: [
-            {
-                text: "Zähle alle Fliesen im Schulgebäude - wir brauchen das für die Renovierung!",
-                quality: 'good',
-                result: "Kurt zählt gewissenhaft jede einzelne Fliese im Gebäude und notiert die Ergebnisse in einer selbst erstellten Strichliste. Carsten hat endlich Frieden!",
-                kurtExpr: 'busy',
-                carstenExpr: 'relieved'
-            },
-            {
-                text: "Gieß die Pflanzen im Sekretariat!",
-                quality: 'medium',
-                result: "Kurt gießt die 3 Pflanzen im Sekretariat... nach 2 Minuten ist er zurück: 'Fertig! Die Pflanzen sehen gut aus. So, was machen WIR jetzt?'",
-                kurtExpr: 'happy',
-                carstenExpr: 'frustrated'
-            },
-            {
-                text: "Leite die Lehrerkonferenz heute alleine!",
-                quality: 'bad',
-                result: "Kurt leitet die Konferenz und beschließt eine Pflicht-Karaoke-Pause, Jogginghosen-Freitag und eine Streichelzoo-AG. Drei Lehrer reichen ihren Urlaub ein!",
-                kurtExpr: 'chaos',
-                carstenExpr: 'crying'
-            }
-        ]
-    }
-];
+// ----- Game State -----
+let state        = 'menu';
+let score        = 0;
+let highScore    = parseInt(localStorage.getItem('mopsHigh') || '0');
+let lives        = 3;
+let level        = 1;
+let frame        = 0;
+let spawnTimer   = 0;
+let spawnEvery   = 148;
+let missedCount  = 0;
 
-// ===== GAME STATE =====
-let state = {
-    scene: 'title',
-    round: 0,
-    patience: 50,
-    score: 0,
-    history: []
+// ----- Trampoline -----
+const tramp = {
+  x: W/2 - TRAMP_W/2,
+  y: TRAMP_Y,
+  bounce: 0,
+  leftDown:  false,
+  rightDown: false,
 };
 
-const game = document.getElementById('game');
+// ----- Stars -----
+const STARS = Array.from({length: 55}, () => ({
+  x:     Math.random() * W,
+  y:     Math.random() * (BUILDING_Y + 60),
+  r:     Math.random() * 1.4 + 0.4,
+  phase: Math.random() * Math.PI * 2,
+  speed: Math.random() * 0.04 + 0.02,
+}));
 
-// ===== PATIENCE BAR COLOR =====
-function getPatienceColor(p) {
-    if (p >= 70) return '#4CAF50';
-    if (p >= 40) return '#FFB300';
-    return '#EF5350';
+// ----- Particles -----
+let particles = [];
+function addParticles(x, y, colors, n = 10) {
+  for (let i = 0; i < n; i++) {
+    const angle = Math.random() * Math.PI * 2;
+    const speed = Math.random() * 4 + 1;
+    particles.push({
+      x, y,
+      vx: Math.cos(angle) * speed,
+      vy: Math.sin(angle) * speed - 2,
+      life: 35, max: 35,
+      color: colors[Math.floor(Math.random() * colors.length)],
+      size:  Math.random() * 4 + 1.5,
+    });
+  }
 }
 
-// ===== RENDER FUNCTIONS =====
-
-function renderTitle() {
-    game.innerHTML = `
-        <div class="title-screen fade-in">
-            <h1 class="comic-title">KURTS BÜRO-CHAOS</h1>
-            <div class="subtitle">Ein Comic-Spiel über das Überleben im Schulbüro</div>
-            <div class="title-characters">
-                <div class="title-char-box">
-                    ${drawKurt('bored', 0.9)}
-                    <div class="name">KURT</div>
-                    <div class="role">Schulleiter & Nervensäge</div>
-                </div>
-                <div class="title-char-box">
-                    ${drawCarsten('working', 0.9)}
-                    <div class="name">CARSTEN</div>
-                    <div class="role">Stellvertreter & Leidtragender</div>
-                </div>
-            </div>
-            <button class="btn" onclick="startGame()">SPIELEN!</button>
-        </div>
-    `;
+// ----- Floating texts -----
+let floats = [];
+function addFloat(x, y, text, color) {
+  floats.push({ x, y, text, color, life: 55, max: 55 });
 }
 
-function renderHUD() {
-    const p = Math.max(0, Math.min(100, state.patience));
-    return `
-        <div class="hud">
-            <div class="hud-round">Runde ${state.round + 1} / ${ROUNDS.length}</div>
-            <div class="patience-bar-container">
-                <div class="patience-label">CARSTENS GEDULD</div>
-                <div class="patience-bar-bg">
-                    <div class="patience-bar-fill" style="width:${p}%; background:${getPatienceColor(p)};"></div>
-                </div>
-            </div>
-            <div class="hud-score">Punkte: ${state.score}</div>
-        </div>
-    `;
-}
+// ----- Pug Class -----
+class Pug {
+  constructor(win) {
+    this.x       = win.x + 15;
+    this.y       = win.y + 12;
+    this.vx      = 0;
+    this.vy      = 0.4;
+    this.state   = 'falling';
+    this.rot     = 0;
+    this.vrot    = (Math.random() - 0.5) * 0.08;
+    this.alpha   = 1;
+    this.counted = false;
+    this.gravity = 0.28 + level * 0.018;
+    this.frame   = 0;
+  }
 
-function renderOffice() {
-    game.innerHTML = `
-        ${renderHUD()}
-        <div class="scene office-scene fade-in">
-            <div class="office-room kurt-office">
-                <div class="room-label">Kurts Büro</div>
-                <div class="character-container swivel" style="left: 50%; transform-origin: bottom center; margin-left: -50px;">
-                    ${drawKurt('bored', 0.85)}
-                </div>
-                <div class="desk" style="left: 50%; margin-left: -100px;">
-                    <div class="desk-items">
-                        <div class="paper" style="--rot: -8deg;"></div>
-                        <div class="paper" style="--rot: 5deg;"></div>
-                        <div class="paper" style="--rot: -3deg;"></div>
-                        <div class="paper" style="--rot: 12deg;"></div>
-                        <div class="paper" style="--rot: -6deg;"></div>
-                    </div>
-                </div>
-                <div class="speech-bubble" style="top: 40px; left: 50%; transform: translateX(-50%); max-width: 200px; font-size: 0.9em;">
-                    *gähn* ... So langweilig...
-                </div>
-            </div>
-            <div class="office-room carsten-office">
-                <div class="room-label">Carstens Büro</div>
-                <div class="character-container work-typing" style="left: 50%; margin-left: -50px;">
-                    ${drawCarsten('working', 0.85)}
-                </div>
-                <div class="desk" style="left: 50%; margin-left: -100px;">
-                    <div class="desk-items">
-                        <div class="computer">
-                            <div class="computer-screen"></div>
-                        </div>
-                        <div class="paper" style="--rot: 2deg;"></div>
-                        <div class="paper" style="--rot: -2deg;"></div>
-                    </div>
-                </div>
-                <div class="speech-bubble" style="top: 40px; left: 50%; transform: translateX(-50%); max-width: 200px; font-size: 0.9em;">
-                    *tipp tipp tipp*
-                </div>
-            </div>
-        </div>
-    `;
-
-    setTimeout(() => renderDisturbance(), 2500);
-}
-
-function renderDisturbance() {
-    const round = ROUNDS[state.round];
-    const d = round.disturbance;
-
-    game.innerHTML = `
-        ${renderHUD()}
-        <div class="scene disturbance-scene fade-in">
-            <div class="scene-description">${d.narration}</div>
-            <div style="position: relative; display: flex; flex-direction: column; align-items: center; flex: 1; justify-content: center;">
-                <div class="speech-bubble" style="position: relative; margin-bottom: 30px; max-width: 350px; font-size: 1.05em;">
-                    "${d.speech}"
-                </div>
-                <div class="characters-row">
-                    <div class="slide-in-left" style="position: relative;">
-                        ${drawKurt(d.kurtExpr, 1)}
-                        <div class="action-word">STÖR!</div>
-                    </div>
-                    <div class="slide-in-right">
-                        ${drawCarsten(d.carstenExpr, 1)}
-                    </div>
-                </div>
-            </div>
-            <div style="padding: 20px; text-align: center;">
-                <button class="btn-next" onclick="renderChoice()">Carsten helfen!</button>
-            </div>
-        </div>
-    `;
-}
-
-function renderChoice() {
-    const round = ROUNDS[state.round];
-    const shuffled = [...round.tasks].sort(() => Math.random() - 0.5);
-
-    const colors = { good: '#4CAF50', medium: '#FFB300', bad: '#EF5350' };
-    const bgColors = ['#FF6B6B', '#FFB74D', '#64B5F6'];
-
-    game.innerHTML = `
-        ${renderHUD()}
-        <div class="scene choice-panel fade-in">
-            <div class="choice-header">HILF CARSTEN!</div>
-            <div class="choice-instruction">Gib Kurt eine Aufgabe, um ihn abzulenken:</div>
-            <div class="choices-container">
-                ${shuffled.map((task, i) => `
-                    <button class="choice-btn bounce" style="animation-delay: ${i * 0.15}s;" onclick="chooseTask(${round.tasks.indexOf(task)})">
-                        <div class="choice-number" style="background: ${bgColors[i]};">${i + 1}</div>
-                        <div>${task.text}</div>
-                    </button>
-                `).join('')}
-            </div>
-            <div class="choice-preview" style="margin-top: 20px;">
-                <div style="display: flex; gap: 20px; align-items: flex-end;">
-                    ${drawKurt('bored', 0.7)}
-                    <div style="font-family: 'Bangers', Impact, sans-serif; font-size: 1.6em; color: #E65100; animation: shake 1s infinite;">?</div>
-                    ${drawCarsten('desperate', 0.7)}
-                </div>
-            </div>
-        </div>
-    `;
-}
-
-function chooseTask(taskIndex) {
-    const round = ROUNDS[state.round];
-    const task = round.tasks[taskIndex];
-
-    let patienceChange = 0;
-    let scoreChange = 0;
-    let qualityLabel = '';
-
-    switch (task.quality) {
-        case 'good':
-            patienceChange = 15;
-            scoreChange = 3;
-            qualityLabel = 'SUPER IDEE!';
-            break;
-        case 'medium':
-            patienceChange = -5;
-            scoreChange = 1;
-            qualityLabel = 'NAJA...';
-            break;
-        case 'bad':
-            patienceChange = -20;
-            scoreChange = -1;
-            qualityLabel = 'OH NEIN!';
-            break;
+  update() {
+    this.frame++;
+    if (this.state === 'falling') {
+      this.vy  += this.gravity;
+      this.y   += this.vy;
+      this.rot += this.vrot;
+      if (this.y >= GROUND_Y - 4) {
+        this.y     = GROUND_Y - 4;
+        this.state = 'missed';
+      }
     }
+    if (this.state === 'bouncing') {
+      this.vy  += 0.45;
+      this.x   += this.vx;
+      this.y   += this.vy;
+      this.rot += this.vrot * 0.7;
+      if (
+        this.x > AMBULANCE_X - 12 &&
+        this.x < AMBULANCE_X + AMBULANCE_W + 12 &&
+        this.y > AMBULANCE_Y - 15 &&
+        this.y < GROUND_Y
+      ) {
+        this.state = 'saved';
+      }
+      if (this.y > GROUND_Y + 20 || this.x < -60) {
+        this.state = 'missed';
+      }
+    }
+    if (this.state === 'missed' || this.state === 'saved') {
+      this.alpha -= 0.045;
+    }
+  }
 
-    state.patience += patienceChange;
-    state.score += scoreChange;
-    state.patience = Math.max(0, Math.min(100, state.patience));
-    state.history.push({ round: state.round, quality: task.quality });
+  consume() {
+    if (this.counted) return null;
+    this.counted = true;
+    return this.state;
+  }
 
-    renderResult(task, qualityLabel, patienceChange);
+  done()  { return this.alpha <= 0; }
+
+  draw() {
+    if (this.alpha <= 0) return;
+    ctx.save();
+    ctx.globalAlpha = this.alpha;
+    ctx.translate(this.x, this.y);
+    ctx.rotate(this.rot);
+    drawPug(this.state, this.frame);
+    ctx.restore();
+  }
 }
 
-function renderResult(task, qualityLabel, patienceChange) {
-    const icons = { good: '✅', medium: '😐', bad: '💥' };
-    const effectText = patienceChange > 0
-        ? `Carstens Geduld +${patienceChange}%`
-        : `Carstens Geduld ${patienceChange}%`;
+// ----- Draw Pug -----
+function drawPug(pugState, f) {
+  const leg = Math.sin(f * 0.35) * 4;
 
-    game.innerHTML = `
-        ${renderHUD()}
-        <div class="scene result-scene ${task.quality} fade-in">
-            <div class="result-icon">${icons[task.quality]}</div>
-            <div class="result-title">${qualityLabel}</div>
-            <div style="display: flex; gap: 25px; align-items: flex-end; margin-bottom: 15px;">
-                ${drawKurt(task.kurtExpr, 0.85)}
-                ${drawCarsten(task.carstenExpr, 0.85)}
-            </div>
-            <div class="result-text">${task.result}</div>
-            <div class="result-effect">${effectText}</div>
-            <button class="btn-next" onclick="nextRound()">Weiter</button>
-        </div>
-    `;
+  // Body
+  ctx.fillStyle = '#D4A96A';
+  ctx.beginPath();
+  ctx.ellipse(0, 6, 13, 17, 0, 0, Math.PI*2);
+  ctx.fill();
+
+  // Tail
+  ctx.save();
+  ctx.strokeStyle = '#B8894A';
+  ctx.lineWidth = 4; ctx.lineCap = 'round';
+  ctx.beginPath();
+  ctx.arc(11, -1, 7, Math.PI*0.6, Math.PI*2.1);
+  ctx.stroke();
+  ctx.restore();
+
+  // Back legs
+  ctx.fillStyle = '#C4996A';
+  ctx.beginPath();
+  ctx.ellipse(-7, 20 + leg*0.5, 4, 7, -0.25, 0, Math.PI*2);
+  ctx.ellipse( 7, 20 - leg*0.5, 4, 7,  0.25, 0, Math.PI*2);
+  ctx.fill();
+
+  // Head
+  ctx.fillStyle = '#D4A96A';
+  ctx.beginPath();
+  ctx.arc(0, -13, 15, 0, Math.PI*2);
+  ctx.fill();
+
+  // Ears
+  ctx.fillStyle = '#8B6030';
+  ctx.beginPath();
+  ctx.ellipse(-11, -24, 6.5, 9, -0.45, 0, Math.PI*2);
+  ctx.ellipse( 11, -24, 6.5, 9,  0.45, 0, Math.PI*2);
+  ctx.fill();
+
+  // Face mask
+  ctx.fillStyle = '#7A5025';
+  ctx.beginPath();
+  ctx.ellipse(0, -11, 10, 9.5, 0, 0, Math.PI*2);
+  ctx.fill();
+
+  // Eyes
+  ctx.fillStyle = '#fff';
+  ctx.beginPath();
+  ctx.arc(-5.5, -15, 5.5, 0, Math.PI*2);
+  ctx.arc( 5.5, -15, 5.5, 0, Math.PI*2);
+  ctx.fill();
+
+  if (pugState === 'missed') {
+    ctx.strokeStyle = '#222'; ctx.lineWidth = 2;
+    [-5.5, 5.5].forEach(ex => {
+      ctx.beginPath(); ctx.moveTo(ex-3,-18); ctx.lineTo(ex+3,-12); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(ex+3,-18); ctx.lineTo(ex-3,-12); ctx.stroke();
+    });
+  } else {
+    ctx.fillStyle = '#111';
+    const pupilR = pugState === 'bouncing' ? 3.8 : 3.2;
+    ctx.beginPath();
+    ctx.arc(-5.5, -15, pupilR, 0, Math.PI*2);
+    ctx.arc( 5.5, -15, pupilR, 0, Math.PI*2);
+    ctx.fill();
+    ctx.fillStyle = '#fff';
+    ctx.beginPath();
+    ctx.arc(-4.2, -16, 1.3, 0, Math.PI*2);
+    ctx.arc(  6.8, -16, 1.3, 0, Math.PI*2);
+    ctx.fill();
+    if (pugState === 'falling') {
+      ctx.fillStyle = 'rgba(0,0,0,0.45)';
+      ctx.beginPath();
+      ctx.arc(-5.5, -13.5, 1.5, 0, Math.PI*2);
+      ctx.arc( 5.5, -13.5, 1.5, 0, Math.PI*2);
+      ctx.fill();
+    }
+  }
+
+  // Nose
+  ctx.fillStyle = '#2A1200';
+  ctx.beginPath();
+  ctx.ellipse(0, -7.5, 4.5, 3, 0, 0, Math.PI*2);
+  ctx.fill();
+
+  // Mouth
+  ctx.strokeStyle = '#2A1200'; ctx.lineWidth = 1.5; ctx.lineCap = 'round';
+  ctx.beginPath();
+  if      (pugState === 'bouncing') ctx.arc(0, -5, 4.5, 0.15, Math.PI-0.15);
+  else if (pugState === 'falling')  ctx.arc(0, -3, 3.5, Math.PI+0.2, -0.2);
+  else                              ctx.arc(0, -4.5, 3, Math.PI+0.3, -0.3);
+  ctx.stroke();
+
+  // Forehead wrinkles
+  ctx.strokeStyle = '#7A5025'; ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(-5,-20); ctx.lineTo(-3,-17);
+  ctx.moveTo( 0,-21); ctx.lineTo( 0,-18);
+  ctx.moveTo( 5,-20); ctx.lineTo( 3,-17);
+  ctx.stroke();
+
+  // Front paws
+  ctx.fillStyle = '#C4996A';
+  ctx.beginPath();
+  ctx.ellipse(-6, 14 - leg*0.3, 4, 6, -0.2, 0, Math.PI*2);
+  ctx.ellipse( 6, 14 + leg*0.3, 4, 6,  0.2, 0, Math.PI*2);
+  ctx.fill();
 }
 
-function nextRound() {
-    state.round++;
+// ----- Draw Building -----
+let flameT = 0;
+function drawBuilding() {
+  flameT += 0.18;
 
-    // Check lose
-    if (state.patience <= 0) {
-        renderLose();
-        return;
+  // Shadow
+  ctx.fillStyle = 'rgba(0,0,0,0.25)';
+  ctx.fillRect(BUILDING_X+8, BUILDING_Y+8, BUILDING_W, BUILDING_H);
+
+  // Main walls
+  const wg = ctx.createLinearGradient(BUILDING_X, 0, BUILDING_X+BUILDING_W, 0);
+  wg.addColorStop(0,   '#7a5a3d');
+  wg.addColorStop(0.5, '#8d6a49');
+  wg.addColorStop(1,   '#6a4a30');
+  ctx.fillStyle = wg;
+  ctx.fillRect(BUILDING_X, BUILDING_Y, BUILDING_W, BUILDING_H);
+
+  // Brick pattern
+  ctx.strokeStyle = 'rgba(0,0,0,0.18)'; ctx.lineWidth = 1;
+  for (let r = 0; r < 13; r++) {
+    for (let c = 0; c < 4; c++) {
+      const bx = BUILDING_X + c*34 + (r%2 === 0 ? 0 : 17);
+      ctx.strokeRect(bx+2, BUILDING_Y+r*34+2, 30, 30);
     }
+  }
 
-    // Check win (perfect)
-    if (state.patience >= 100) {
-        renderWin();
-        return;
-    }
+  // Roof parapet
+  ctx.fillStyle = '#9d7a55';
+  ctx.fillRect(BUILDING_X-6, BUILDING_Y-14, BUILDING_W+12, 18);
+  ctx.fillStyle = '#7a5a3d';
+  for (let i = 0; i < 8; i++) {
+    ctx.fillRect(BUILDING_X-4+i*19, BUILDING_Y-18, 10, 10);
+  }
 
-    // Check rounds complete
-    if (state.round >= ROUNDS.length) {
-        if (state.patience > 50) {
-            renderSurviveGood();
-        } else {
-            renderSurviveBare();
+  // Windows
+  WINDOWS.forEach((win, idx) => {
+    const burning  = idx >= 6;
+    const flickIdx = Math.floor((frame/4 + idx*1.7)) % 4;
+    const fireColors = ['#FF5500','#FF7700','#FF9900','#FFCC00'];
+
+    ctx.fillStyle = '#4a2e14';
+    ctx.fillRect(win.x-2, win.y-2, 32, 32);
+    ctx.fillStyle = burning ? fireColors[flickIdx] : '#1a1a35';
+    ctx.fillRect(win.x, win.y, 28, 28);
+    ctx.strokeStyle = burning ? 'rgba(180,60,0,0.6)' : 'rgba(60,60,120,0.7)';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(win.x+14, win.y);    ctx.lineTo(win.x+14, win.y+28);
+    ctx.moveTo(win.x,    win.y+14); ctx.lineTo(win.x+28, win.y+14);
+    ctx.stroke();
+  });
+
+  // Roof flames
+  [10,30,52,74,96,118].forEach((dx, i) => {
+    const fx   = BUILDING_X + dx;
+    const wave = Math.sin(flameT + i*0.9) * 9;
+    const h    = 28 + Math.sin(flameT*1.2 + i) * 14;
+
+    ctx.fillStyle = 'rgba(255,70,0,0.9)';
+    ctx.beginPath();
+    ctx.moveTo(fx, BUILDING_Y-4);
+    ctx.quadraticCurveTo(fx-10+wave, BUILDING_Y-h*0.55, fx+2,  BUILDING_Y-h);
+    ctx.quadraticCurveTo(fx+12+wave, BUILDING_Y-h*0.55, fx+20, BUILDING_Y-4);
+    ctx.closePath(); ctx.fill();
+
+    ctx.fillStyle = 'rgba(255,220,0,0.85)';
+    ctx.beginPath();
+    ctx.moveTo(fx+5, BUILDING_Y-4);
+    ctx.quadraticCurveTo(fx-2+wave, BUILDING_Y-h*0.38, fx+5,  BUILDING_Y-h*0.62);
+    ctx.quadraticCurveTo(fx+13+wave,BUILDING_Y-h*0.38, fx+15, BUILDING_Y-4);
+    ctx.closePath(); ctx.fill();
+  });
+}
+
+// ----- Draw Ambulance -----
+function drawAmbulance() {
+  const ax=AMBULANCE_X, ay=AMBULANCE_Y, aw=AMBULANCE_W, ah=AMBULANCE_H;
+
+  // Shadow
+  ctx.fillStyle = 'rgba(0,0,0,0.2)';
+  ctx.beginPath();
+  ctx.ellipse(ax+aw*0.5, ay+ah*0.82+5, aw*0.42, 8, 0, 0, Math.PI*2);
+  ctx.fill();
+
+  // Body
+  ctx.fillStyle = '#E53935';
+  ctx.beginPath(); ctx.roundRect(ax, ay+ah*0.12, aw, ah*0.72, 6); ctx.fill();
+
+  // Cab
+  ctx.fillStyle = '#EF5350';
+  ctx.beginPath(); ctx.roundRect(ax+aw*0.04, ay-ah*0.12, aw*0.52, ah*0.3, [8,8,0,0]); ctx.fill();
+
+  // Windshield
+  ctx.fillStyle = '#90CAF9';
+  ctx.beginPath(); ctx.roundRect(ax+aw*0.08, ay-ah*0.06, aw*0.4, ah*0.22, 4); ctx.fill();
+  ctx.fillStyle = 'rgba(255,255,255,0.35)';
+  ctx.beginPath(); ctx.roundRect(ax+aw*0.1, ay-ah*0.04, aw*0.15, ah*0.1, 2); ctx.fill();
+
+  // White panel
+  ctx.fillStyle = 'white';
+  ctx.fillRect(ax+aw*0.56, ay+ah*0.14, aw*0.38, ah*0.54);
+
+  // Cross
+  ctx.fillStyle = '#E53935';
+  const cx=ax+aw*0.67, cy=ay+ah*0.24, cs=aw*0.13;
+  ctx.fillRect(cx-cs*0.35, cy-cs,      cs*0.7, cs*2);
+  ctx.fillRect(cx-cs,      cy-cs*0.35, cs*2,   cs*0.7);
+
+  // Label
+  ctx.fillStyle = '#333'; ctx.font = 'bold 8px Courier New'; ctx.textAlign = 'center';
+  ctx.fillText('MOPS',    ax+aw*0.74, ay+ah*0.62);
+  ctx.fillText('RETTUNG', ax+aw*0.74, ay+ah*0.72);
+
+  // Wheels
+  [[aw*0.18,ah*0.82],[aw*0.78,ah*0.82]].forEach(([wx,wy]) => {
+    ctx.fillStyle = '#222'; ctx.beginPath(); ctx.arc(ax+wx,ay+wy,11,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle = '#555'; ctx.beginPath(); ctx.arc(ax+wx,ay+wy, 6,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle = '#222'; ctx.beginPath(); ctx.arc(ax+wx,ay+wy, 2,0,Math.PI*2); ctx.fill();
+  });
+
+  // Siren
+  const fl = Math.floor(frame/12)%2;
+  ctx.fillStyle = fl ? '#FF1744' : '#2979FF';
+  ctx.beginPath(); ctx.roundRect(ax+8,  ay-ah*0.22, 14, 8, 3); ctx.fill();
+  ctx.fillStyle = fl ? '#2979FF' : '#FF1744';
+  ctx.beginPath(); ctx.roundRect(ax+26, ay-ah*0.22, 14, 8, 3); ctx.fill();
+}
+
+// ----- Draw Trampoline -----
+function drawTrampoline() {
+  const tx=tramp.x, ty=tramp.y, tw=TRAMP_W, th=TRAMP_H;
+  const bo = tramp.bounce > 0 ? Math.sin(tramp.bounce*0.45)*6 : 0;
+  tramp.bounce = Math.max(0, tramp.bounce-1);
+
+  drawHelper(tx-12,    ty+bo, false);
+  drawHelper(tx+tw+12, ty+bo, true);
+
+  ctx.save();
+  ctx.translate(0, bo);
+
+  const sg = ctx.createLinearGradient(tx, ty, tx, ty+th);
+  sg.addColorStop(0,   '#69F0AE');
+  sg.addColorStop(0.5, '#00C853');
+  sg.addColorStop(1,   '#1B5E20');
+  ctx.fillStyle = sg;
+
+  ctx.beginPath();
+  if (tramp.bounce > 0) {
+    const dip = Math.sin(tramp.bounce*0.45)*6;
+    ctx.moveTo(tx, ty);
+    ctx.quadraticCurveTo(tx+tw/2, ty+dip+4,    tx+tw, ty);
+    ctx.lineTo(tx+tw, ty+th);
+    ctx.quadraticCurveTo(tx+tw/2, ty+th+dip+4, tx,    ty+th);
+    ctx.closePath();
+  } else {
+    ctx.roundRect(tx, ty, tw, th, 5);
+  }
+  ctx.fill();
+
+  ctx.strokeStyle = '#00701A'; ctx.lineWidth = 2; ctx.stroke();
+  ctx.strokeStyle = 'rgba(255,255,255,0.25)'; ctx.lineWidth = 1.5;
+  for (let i = 1; i < 5; i++) {
+    ctx.beginPath();
+    ctx.moveTo(tx+(tw/5)*i, ty+3);
+    ctx.lineTo(tx+(tw/5)*i, ty+th-3);
+    ctx.stroke();
+  }
+  ctx.restore();
+}
+
+function drawHelper(x, y, flip) {
+  ctx.save();
+  ctx.translate(x, y);
+  if (flip) ctx.scale(-1, 1);
+
+  ctx.fillStyle = '#1565C0'; ctx.fillRect(-5, -5, 10, 18);
+  ctx.fillStyle = '#333';
+  ctx.fillRect(-6, 10, 7, 8);
+  ctx.fillRect( 1, 10, 7, 8);
+  ctx.fillStyle = '#1E88E5'; ctx.fillRect(-9, -20, 18, 18);
+  ctx.fillStyle = '#FFC107'; ctx.fillRect(-9, -12, 18, 4);
+  ctx.fillStyle = '#FFCC80';
+  ctx.beginPath(); ctx.arc(0, -28, 9, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle = '#F57F17';
+  ctx.beginPath(); ctx.arc(0, -32, 10, Math.PI, Math.PI*2); ctx.fill();
+  ctx.fillRect(-12, -33, 24, 6);
+  ctx.fillStyle = '#E65100'; ctx.fillRect(-14, -28, 28, 4);
+  ctx.fillStyle = '#333';
+  ctx.beginPath();
+  ctx.arc(-3, -29, 2, 0, Math.PI*2);
+  ctx.arc( 3, -29, 2, 0, Math.PI*2);
+  ctx.fill();
+  ctx.fillStyle = '#1565C0'; ctx.fillRect(6, -18, 14, 7);
+  ctx.fillStyle = '#FFCC80';
+  ctx.beginPath(); ctx.arc(20, -14, 5, 0, Math.PI*2); ctx.fill();
+  ctx.restore();
+}
+
+// ----- Draw Background -----
+function drawBackground() {
+  const skyGrad = ctx.createLinearGradient(0, 0, 0, BUILDING_Y+60);
+  skyGrad.addColorStop(0,   '#050520');
+  skyGrad.addColorStop(0.7, '#120a38');
+  skyGrad.addColorStop(1,   '#1a1050');
+  ctx.fillStyle = skyGrad;
+  ctx.fillRect(0, 0, W, BUILDING_Y+60);
+
+  STARS.forEach(s => {
+    s.phase += s.speed;
+    ctx.globalAlpha = 0.45 + 0.55*Math.sin(s.phase);
+    ctx.fillStyle = '#fff';
+    ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, Math.PI*2); ctx.fill();
+  });
+  ctx.globalAlpha = 1;
+
+  // Moon
+  ctx.fillStyle = '#FFFDE7'; ctx.beginPath(); ctx.arc(44, 42, 22, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle = '#F5F5DC'; ctx.beginPath(); ctx.arc(54, 36, 18, 0, Math.PI*2); ctx.fill();
+  ctx.globalAlpha = 0.3; ctx.fillStyle = '#999';
+  [[38,48,4],[30,40,3],[45,55,2]].forEach(([cx,cy,cr]) => {
+    ctx.beginPath(); ctx.arc(cx,cy,cr,0,Math.PI*2); ctx.fill();
+  });
+  ctx.globalAlpha = 1;
+
+  const gGrad = ctx.createLinearGradient(0, GROUND_Y-30, 0, H);
+  gGrad.addColorStop(0,   '#1c3310');
+  gGrad.addColorStop(0.2, '#2d4a1e');
+  gGrad.addColorStop(1,   '#111f0a');
+  ctx.fillStyle = gGrad;
+  ctx.fillRect(0, GROUND_Y-28, W, H-(GROUND_Y-28));
+
+  ctx.fillStyle = '#3d6428'; ctx.fillRect(0, GROUND_Y-28, W, 10);
+  ctx.fillStyle = '#4d7a30';
+  for (let gx = 5; gx < W; gx += 18) {
+    ctx.beginPath();
+    ctx.moveTo(gx,   GROUND_Y-20);
+    ctx.lineTo(gx+4, GROUND_Y-34);
+    ctx.lineTo(gx+9, GROUND_Y-20);
+    ctx.fill();
+  }
+}
+
+// ----- Draw HUD -----
+function drawUI() {
+  ctx.fillStyle = 'rgba(0,0,0,0.72)';
+  ctx.fillRect(0, 0, W, 62);
+  ctx.strokeStyle = '#FFD700'; ctx.lineWidth = 1.5;
+  ctx.beginPath(); ctx.moveTo(0,62); ctx.lineTo(W,62); ctx.stroke();
+
+  // Badge
+  ctx.fillStyle = '#2a2050';
+  ctx.beginPath(); ctx.roundRect(W/2-65, 5, 130, 20, 5); ctx.fill();
+  ctx.fillStyle = '#FFD700'; ctx.font = 'bold 10px Courier New'; ctx.textAlign = 'center';
+  ctx.fillText('★  GAME & WUFF  ★', W/2, 19);
+
+  // Level
+  ctx.fillStyle = level >= 5 ? '#FF5722' : level >= 3 ? '#FF9800' : '#8BC34A';
+  ctx.font = 'bold 10px Courier New'; ctx.textAlign = 'center';
+  ctx.fillText('LVL ' + level, W/2, 50);
+
+  // Score
+  ctx.fillStyle = '#FFD700'; ctx.font = 'bold 12px Courier New'; ctx.textAlign = 'left';
+  ctx.fillText('PUNKTE', 10, 36);
+  ctx.fillStyle = '#fff'; ctx.font = 'bold 20px Courier New';
+  ctx.fillText(String(score).padStart(5,'0'), 10, 56);
+  ctx.fillStyle = '#aaaaff'; ctx.font = '10px Courier New';
+  ctx.fillText('BEST:' + String(highScore).padStart(5,'0'), 12, 22);
+
+  // Lives
+  ctx.fillStyle = '#FF69B4'; ctx.font = 'bold 12px Courier New'; ctx.textAlign = 'right';
+  ctx.fillText('LEBEN', W-10, 36);
+  for (let i = 0; i < 3; i++) {
+    ctx.globalAlpha = (i < lives) ? 1 : 0.18;
+    ctx.font = '20px Arial'; ctx.textAlign = 'right';
+    ctx.fillText('🐾', W-8-i*28, 58);
+  }
+  ctx.globalAlpha = 1;
+}
+
+// ----- Draw Controls -----
+function drawControls() {
+  const btnY = GROUND_Y + 12;
+  const btnH = H - btnY - 8;
+
+  ctx.fillStyle = tramp.leftDown ? '#404070' : '#252545';
+  ctx.beginPath(); ctx.roundRect(8, btnY, W/2-12, btnH, 14); ctx.fill();
+  ctx.strokeStyle = tramp.leftDown ? '#8888cc' : '#505080'; ctx.lineWidth = 2; ctx.stroke();
+  ctx.fillStyle = tramp.leftDown ? '#ccceff' : '#8888cc';
+  ctx.font = 'bold 38px Arial'; ctx.textAlign = 'center';
+  ctx.fillText('◄', W/4, btnY + btnH*0.65);
+
+  ctx.fillStyle = tramp.rightDown ? '#404070' : '#252545';
+  ctx.beginPath(); ctx.roundRect(W/2+4, btnY, W/2-12, btnH, 14); ctx.fill();
+  ctx.strokeStyle = tramp.rightDown ? '#8888cc' : '#505080'; ctx.lineWidth = 2; ctx.stroke();
+  ctx.fillStyle = tramp.rightDown ? '#ccceff' : '#8888cc';
+  ctx.textAlign = 'center';
+  ctx.fillText('►', W*3/4, btnY + btnH*0.65);
+}
+
+// ----- Draw Particles -----
+function drawParticles() {
+  particles.forEach(p => {
+    ctx.globalAlpha = (p.life/p.max)*0.9;
+    ctx.fillStyle   = p.color;
+    ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, Math.PI*2); ctx.fill();
+  });
+  ctx.globalAlpha = 1;
+}
+
+function updateDrawFloats() {
+  floats.forEach(f => {
+    f.y -= 0.9; f.life--;
+    ctx.globalAlpha = f.life / f.max;
+    ctx.fillStyle   = f.color;
+    ctx.font = 'bold 18px Arial'; ctx.textAlign = 'center';
+    ctx.fillText(f.text, f.x, f.y);
+  });
+  ctx.globalAlpha = 1;
+  floats = floats.filter(f => f.life > 0);
+}
+
+// ----- Menu -----
+let menuPugs = [];
+function drawMenu() {
+  drawBackground();
+  if (frame % 90 === 0) {
+    menuPugs.push({x:40+Math.random()*(W-80), y:-30, vy:1.2+Math.random()*0.8, rot:0, vrot:(Math.random()-0.5)*0.1});
+  }
+  menuPugs.forEach(p => { p.y+=p.vy; p.rot+=p.vrot; });
+  menuPugs = menuPugs.filter(p => p.y < H+60);
+  ctx.globalAlpha = 0.25;
+  menuPugs.forEach(p => {
+    ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(p.rot);
+    drawPug('falling', frame); ctx.restore();
+  });
+  ctx.globalAlpha = 1;
+
+  ctx.fillStyle = 'rgba(8,6,30,0.88)';
+  ctx.beginPath(); ctx.roundRect(18, H*0.18, W-36, H*0.62, 22); ctx.fill();
+  ctx.strokeStyle = '#FFD700'; ctx.lineWidth = 3; ctx.stroke();
+
+  ctx.fillStyle = '#FFD700'; ctx.font = 'bold 11px Courier New'; ctx.textAlign = 'center';
+  ctx.fillText('★   GAME & WUFF   ★', W/2, H*0.22);
+
+  ctx.shadowColor='#FF4500'; ctx.shadowBlur=20;
+  ctx.fillStyle='#FF6B35'; ctx.font='bold 52px Arial';
+  ctx.fillText('MOPS', W/2, H*0.34);
+  ctx.fillStyle='#FFD700'; ctx.font='bold 40px Arial';
+  ctx.fillText('RETTUNG!', W/2, H*0.42);
+  ctx.shadowBlur=0;
+
+  const bob = Math.sin(frame*0.06)*6;
+  ctx.save(); ctx.translate(W/2, H*0.535+bob); drawPug('bouncing', frame); ctx.restore();
+
+  ctx.fillStyle='#aaaaff'; ctx.font='bold 13px Courier New'; ctx.textAlign='center';
+  ctx.fillText('BESTPUNKTZAHL: ' + String(highScore).padStart(5,'0'), W/2, H*0.635);
+
+  const pulse = Math.sin(frame*0.09)*0.12+0.88;
+  ctx.fillStyle = `rgba(0,200,90,${pulse})`;
+  ctx.beginPath(); ctx.roundRect(W/2-88, H*0.665, 176, 52, 26); ctx.fill();
+  ctx.fillStyle='#fff'; ctx.font='bold 20px Arial';
+  ctx.fillText('🐾  SPIELEN!  🐾', W/2, H*0.665+34);
+
+  ctx.fillStyle='#888'; ctx.font='11px Courier New';
+  ctx.fillText('Halte ◄ oder ► um das Sprungbrett', W/2, H*0.79);
+  ctx.fillText('zu bewegen und Möpse zu retten!', W/2, H*0.79+16);
+}
+
+// ----- Game Over -----
+function drawGameOver() {
+  ctx.fillStyle='rgba(0,0,0,0.78)'; ctx.fillRect(0,0,W,H);
+  ctx.fillStyle='rgba(10,8,40,0.95)';
+  ctx.beginPath(); ctx.roundRect(28, H*0.22, W-56, H*0.54, 22); ctx.fill();
+  ctx.strokeStyle='#F44336'; ctx.lineWidth=3; ctx.stroke();
+
+  const sadBob = Math.sin(frame*0.04)*3;
+  ctx.save(); ctx.translate(W/2, H*0.32+sadBob); drawPug('missed', frame); ctx.restore();
+
+  ctx.shadowColor='#FF1744'; ctx.shadowBlur=12;
+  ctx.fillStyle='#F44336'; ctx.font='bold 34px Arial'; ctx.textAlign='center';
+  ctx.fillText('KEIN GLÜCK!', W/2, H*0.44);
+  ctx.shadowBlur=0;
+
+  ctx.fillStyle='#FFD700'; ctx.font='bold 16px Courier New';
+  ctx.fillText('PUNKTE: ' + score, W/2, H*0.51);
+
+  if (score >= highScore && score > 0) {
+    ctx.globalAlpha = Math.sin(frame*0.12)*0.35+0.65;
+    ctx.fillStyle='#69F0AE'; ctx.font='bold 15px Courier New';
+    ctx.fillText('★ NEUER REKORD! ★', W/2, H*0.57);
+    ctx.globalAlpha=1;
+  } else {
+    ctx.fillStyle='#aaaaff'; ctx.font='13px Courier New';
+    ctx.fillText('REKORD: ' + String(highScore).padStart(5,'0'), W/2, H*0.57);
+  }
+
+  const pulse=Math.sin(frame*0.09)*0.12+0.88;
+  ctx.fillStyle=`rgba(0,200,90,${pulse})`;
+  ctx.beginPath(); ctx.roundRect(W/2-96, H*0.61, 192, 52, 26); ctx.fill();
+  ctx.fillStyle='#fff'; ctx.font='bold 20px Arial';
+  ctx.fillText('🐾  NOCHMAL!  🐾', W/2, H*0.61+34);
+}
+
+// ----- Collision: trampoline -----
+function checkTrampCollision() {
+  pugs.forEach(pug => {
+    if (pug.state !== 'falling') return;
+    const tx=tramp.x, tw=TRAMP_W, ty=TRAMP_Y;
+    if (pug.x < tx-8 || pug.x > tx+tw+8) return;
+    if (pug.y+18 < ty-2 || pug.y+18 > ty+TRAMP_H+10) return;
+    if (pug.vy <= 0) return;
+
+    const relPos   = Math.max(0, Math.min(1, (pug.x - tx) / tw));
+    pug.state      = 'bouncing';
+    pug.vx         = -(3.5 + relPos*1.5 + Math.random()*0.4);
+    pug.vy         = -(8.5 + Math.random()*1.5 + level*0.25);
+    pug.vrot       = -(Math.random()*0.12+0.04);
+    tramp.bounce   = 22;
+    sfxBounce();
+    addParticles(pug.x, ty, ['#69F0AE','#00C853','#fff'], 7);
+    addFloat(pug.x, ty-10, 'WUFF!', '#69F0AE');
+  });
+}
+
+// ----- Update -----
+let pugs = [];
+function updateGame() {
+  frame++;
+
+  if (tramp.leftDown)  tramp.x = Math.max(TRAMP_MIN_X, tramp.x - TRAMP_SPEED);
+  if (tramp.rightDown) tramp.x = Math.min(TRAMP_MAX_X, tramp.x + TRAMP_SPEED);
+
+  spawnTimer++;
+  if (spawnTimer >= spawnEvery) {
+    spawnTimer = 0;
+    const win = WINDOWS[Math.floor(Math.random() * WINDOWS.length)];
+    pugs.push(new Pug(win));
+    spawnEvery = Math.max(55, 148 - score*0.35 - missedCount*3);
+  }
+
+  pugs.forEach(pug => {
+    pug.update();
+    if ((pug.state === 'saved' || pug.state === 'missed') && !pug.counted) {
+      const result = pug.consume();
+      if (result === 'saved') {
+        const pts = 10 * level;
+        score += pts;
+        addParticles(AMBULANCE_X+AMBULANCE_W*0.5, AMBULANCE_Y+20,
+          ['#FFD700','#FF69B4','#69F0AE','#87CEEB'], 14);
+        addFloat(AMBULANCE_X+AMBULANCE_W*0.5, AMBULANCE_Y, '+'+pts, '#FFD700');
+        sfxSave();
+        const newLevel = Math.floor(score/80)+1;
+        if (newLevel > level) {
+          level = newLevel;
+          sfxLevelUp();
+          addFloat(W/2, H/2, 'LEVEL '+level+'!', '#FF69B4');
         }
-        return;
+      } else if (result === 'missed') {
+        missedCount++;
+        lives--;
+        addParticles(pug.x, GROUND_Y, ['#F44336','#FF5722','#FF7043'], 9);
+        addFloat(pug.x, GROUND_Y-30, 'UFFZ!', '#F44336');
+        sfxMiss();
+        if (lives <= 0) {
+          state = 'gameover';
+          if (score > highScore) {
+            highScore = score;
+            localStorage.setItem('mopsHigh', highScore);
+          }
+        }
+      }
     }
+  });
 
-    renderOffice();
+  pugs = pugs.filter(p => !p.done());
+  checkTrampCollision();
+
+  particles.forEach(p => { p.x+=p.vx; p.y+=p.vy; p.vy+=0.22; p.life--; });
+  particles = particles.filter(p => p.life > 0);
 }
 
-function spawnConfetti(container) {
-    const colors = ['#FF4444', '#FFD700', '#4CAF50', '#2196F3', '#FF69B4', '#9C27B0', '#FF9800'];
-    for (let i = 0; i < 40; i++) {
-        const confetti = document.createElement('div');
-        confetti.className = 'confetti';
-        confetti.style.left = Math.random() * 100 + '%';
-        confetti.style.top = '-10px';
-        confetti.style.background = colors[Math.floor(Math.random() * colors.length)];
-        confetti.style.animationDelay = Math.random() * 2 + 's';
-        confetti.style.animationDuration = (2 + Math.random() * 2) + 's';
-        confetti.style.width = (6 + Math.random() * 10) + 'px';
-        confetti.style.height = (6 + Math.random() * 10) + 'px';
-        container.appendChild(confetti);
-    }
-}
-
-function renderWin() {
-    game.innerHTML = `
-        <div class="end-screen win fade-in" id="end-container" style="position: relative; overflow: hidden;">
-            <h1 class="comic-title">GESCHAFFT!</h1>
-            <div class="end-characters">
-                ${drawKurt('busy', 1)}
-                ${drawCarsten('happy', 1)}
-            </div>
-            <div class="end-text">
-                Carsten jubelt! Kurt ist endlich dauerhaft beschäftigt und Carsten kann in Ruhe seine Arbeit erledigen!
-                <br><br>
-                <strong>Endpunktzahl: ${state.score} Punkte</strong>
-            </div>
-            <button class="btn" onclick="resetGame()">NOCHMAL SPIELEN!</button>
-        </div>
-    `;
-    setTimeout(() => {
-        const c = document.getElementById('end-container');
-        if (c) spawnConfetti(c);
-    }, 300);
-}
-
-function renderSurviveGood() {
-    game.innerHTML = `
-        <div class="end-screen survive fade-in">
-            <h1 class="comic-title">ÜBERLEBT!</h1>
-            <div class="end-characters">
-                ${drawKurt('happy', 1)}
-                ${drawCarsten('relieved', 1)}
-            </div>
-            <div class="end-text">
-                Carsten hat den Tag überstanden! Kurt war zwar nicht immer beschäftigt, aber Carsten hat das Meiste erledigt bekommen.
-                <br><br>
-                <strong>Endpunktzahl: ${state.score} Punkte</strong>
-                <br>
-                Schaffst du es beim nächsten Mal, Carstens Geduld auf 100% zu bringen?
-            </div>
-            <button class="btn" onclick="resetGame()">NOCHMAL SPIELEN!</button>
-        </div>
-    `;
-}
-
-function renderSurviveBare() {
-    game.innerHTML = `
-        <div class="end-screen survive fade-in">
-            <h1 class="comic-title">KNAPP!</h1>
-            <div class="end-characters">
-                ${drawKurt('mischievous', 1)}
-                ${drawCarsten('frustrated', 1)}
-            </div>
-            <div class="end-text">
-                Carsten hat gerade so überlebt - aber er ist am Limit! Kurt war einfach zu oft eine Nervensäge.
-                <br><br>
-                <strong>Endpunktzahl: ${state.score} Punkte</strong>
-                <br>
-                Versuch es nochmal und finde bessere Aufgaben für Kurt!
-            </div>
-            <button class="btn" onclick="resetGame()">NOCHMAL SPIELEN!</button>
-        </div>
-    `;
-}
-
-function renderLose() {
-    game.innerHTML = `
-        <div class="end-screen lose fade-in">
-            <h1 class="comic-title">GAME OVER!</h1>
-            <div class="end-characters">
-                ${drawKurt('mischievous', 1)}
-                ${drawCarsten('crying', 1)}
-            </div>
-            <div class="end-text">
-                Carstens Geduld ist am Ende! Er packt seine Sachen und geht nach Hause.
-                Kurt steht verwirrt im Büro: "Was? Wo willst du hin? Ich wollte dir doch noch ein Video zeigen!"
-                <br><br>
-                <strong>Endpunktzahl: ${state.score} Punkte</strong>
-            </div>
-            <button class="btn" onclick="resetGame()">NOCHMAL VERSUCHEN!</button>
-        </div>
-    `;
-}
-
-// ===== GAME CONTROL =====
-
+// ----- Start / Reset -----
 function startGame() {
-    state = {
-        scene: 'office',
-        round: 0,
-        patience: 50,
-        score: 0,
-        history: []
-    };
-    renderOffice();
+  sfxStart();
+  score       = 0;
+  lives       = 3;
+  level       = 1;
+  frame       = 0;
+  spawnTimer  = 0;
+  spawnEvery  = 148;
+  missedCount = 0;
+  pugs        = [];
+  particles   = [];
+  floats      = [];
+  tramp.x          = W/2 - TRAMP_W/2;
+  tramp.bounce     = 0;
+  tramp.leftDown   = false;
+  tramp.rightDown  = false;
+  state = 'playing';
 }
 
-function resetGame() {
-    state = {
-        scene: 'title',
-        round: 0,
-        patience: 50,
-        score: 0,
-        history: []
-    };
-    renderTitle();
+// ----- Main Draw Loop -----
+function draw() {
+  ctx.clearRect(0, 0, W, H);
+  if (state === 'menu') { drawMenu(); return; }
+
+  drawBackground();
+  drawBuilding();
+  drawAmbulance();
+  drawTrampoline();
+  pugs.forEach(p => p.draw());
+  drawParticles();
+  updateDrawFloats();
+  drawUI();
+  drawControls();
+  if (state === 'gameover') drawGameOver();
 }
 
-// ===== START =====
-renderTitle();
+function loop() {
+  if (state === 'playing') updateGame();
+  else frame++;
+  draw();
+  requestAnimationFrame(loop);
+}
+
+// ----- Input: Keyboard -----
+document.addEventListener('keydown', e => {
+  if (e.key==='ArrowLeft'  || e.key==='a'||e.key==='A') tramp.leftDown  = true;
+  if (e.key==='ArrowRight' || e.key==='d'||e.key==='D') tramp.rightDown = true;
+  if ((e.key===' '||e.key==='Enter') && (state==='menu'||state==='gameover')) startGame();
+});
+document.addEventListener('keyup', e => {
+  if (e.key==='ArrowLeft'  || e.key==='a'||e.key==='A') tramp.leftDown  = false;
+  if (e.key==='ArrowRight' || e.key==='d'||e.key==='D') tramp.rightDown = false;
+});
+
+// ----- Input: Touch -----
+function canvasXY(cx, cy) {
+  const r = canvas.getBoundingClientRect();
+  return { x:(cx-r.left)*(W/r.width), y:(cy-r.top)*(H/r.height) };
+}
+
+const activeTouches = new Map();
+
+canvas.addEventListener('touchstart', e => {
+  e.preventDefault();
+  if (state==='menu'||state==='gameover') { startGame(); return; }
+  [...e.changedTouches].forEach(t => {
+    const {x} = canvasXY(t.clientX, t.clientY);
+    const side = x < W/2 ? 'left' : 'right';
+    activeTouches.set(t.identifier, side);
+    if (side==='left') tramp.leftDown=true; else tramp.rightDown=true;
+  });
+}, {passive:false});
+
+function syncTouches() {
+  let l=false, r=false;
+  activeTouches.forEach(s => { if(s==='left') l=true; if(s==='right') r=true; });
+  tramp.leftDown=l; tramp.rightDown=r;
+}
+
+canvas.addEventListener('touchend', e => {
+  e.preventDefault();
+  [...e.changedTouches].forEach(t => activeTouches.delete(t.identifier));
+  syncTouches();
+}, {passive:false});
+
+canvas.addEventListener('touchcancel', e => {
+  e.preventDefault();
+  [...e.changedTouches].forEach(t => activeTouches.delete(t.identifier));
+  syncTouches();
+}, {passive:false});
+
+// ----- Mouse (Desktop) -----
+canvas.addEventListener('mousedown', e => {
+  if (state!=='playing') { startGame(); return; }
+  const {x}=canvasXY(e.clientX,e.clientY);
+  if (x<W/2) tramp.leftDown=true; else tramp.rightDown=true;
+});
+canvas.addEventListener('mouseup',    () => { tramp.leftDown=tramp.rightDown=false; });
+canvas.addEventListener('mouseleave', () => { tramp.leftDown=tramp.rightDown=false; });
+
+// ----- Start! -----
+loop();
 </script>
-
 </body>
 </html>
